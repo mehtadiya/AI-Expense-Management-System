@@ -1,4 +1,3 @@
-const bodyParser = require('body-parser');
 const express= require('express');
 const cors=require('cors');
 
@@ -12,7 +11,8 @@ const signup=require('./signup.js');
 
 const app=express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use('/',users)
 app.use('/',category)
