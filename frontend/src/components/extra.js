@@ -1,0 +1,111 @@
+import React, { useEffect, useState } from "react";
+// import { Card } from "react-bootstrap";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import Manual from "./addManual";
+import Multiple from "./addMultiple";
+import Online from "./addOnline";
+import Scan from "./addScan";
+import RecordAudio from "./addAudio";
+import { Link, useParams } from "react-router-dom";
+import SetBudget from "./setCategoricalBudget";
+import SetCategoricalBudget from "./setCategoricalBudget";
+import SetTotalBudget from "./setTotalBudget";
+const API_URL = process.env.REACT_APP_API_URL;
+
+function Extra() {
+    const [selectedOption, setSelectedOption] = useState(null);
+    const {userID}=useParams();
+
+    const options = [
+        { option: "Total", title: "Total", icon: "bi bi-pencil-square", color: "#198754" },
+        { option: "Category", title: "Category Wise", icon: "bi bi-pencil-square", color: "#198754" },
+    ]
+
+    const renderComponent=(()=>{
+        switch(selectedOption){
+            case "Total":
+                return <SetTotalBudget />
+               
+            case "Category":
+                return <SetCategoricalBudget />
+                // return "hello2"
+            default:
+            return <SetTotalBudget userID={userID}/>
+            
+        }
+    })
+    return (
+        <>
+            <div className="container-fluid">
+                <div className="row mt-3">
+                    <div className="col-8">
+                        <h2 className="fw-bolder" style={{ color: "#0A382B" }}>
+                            Add Budget
+                        </h2>
+                        <p style={{ color: "#6c757d" }}>
+                            Choose how you want to add your expense details.
+                        </p>
+
+                    </div>
+                    <div className="col">
+
+                    </div>
+                </div>
+
+                <div className="row mt-3">
+                    {options.map((opt, index) => (
+                        <div className="col" key={index}>
+                            <div className="card text-center border-0 shadow-sm"
+                                onClick={() => { setSelectedOption(opt.option) }}
+                                style={{
+                                    borderRadius: "20px",
+                                    padding: "20px",
+                                    height: "180px",
+                                    transition: "all 0.3s ease",
+                                    cursor: "pointer",
+                                    background: "white",
+                                    boxShadow: "0 4px 20px rgba(72, 187, 120, 0.15)",
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-5px")}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}>
+
+                                <div
+                                    className="icon-wrapper d-flex justify-content-center align-items-center mx-auto mb-3 "
+                                    style={{
+                                        backgroundColor: `${opt.color}15`, //used to make semi-transparent colors in CSS.
+                                        color: opt.color,
+                                        borderRadius: "50%",
+                                        width: "70px",
+                                        height: "70px",
+                                        fontSize: "28px",
+                                    }}
+                                >
+                                    <i className={opt.icon}></i>
+                                </div>
+                                <h6 className="fw-semibold" style={{ color: "#0A382B" }}>
+                                    {opt.title}
+                                </h6>
+                            </div>
+                        </div>
+                    ))}
+
+                </div>
+
+                <div className="row mt-3">
+        <div className="col ">
+            <div className="card p-2" style={{
+                borderRadius: "20px",
+                transition: "all 0.3s ease",
+                background: "white",
+                boxShadow: "0 4px 20px rgba(72, 187, 120, 0.15)",
+              }}>
+                {renderComponent()}
+            </div>
+        </div>
+      </div>
+            </div>
+        </>
+    );
+}
+
+export default Extra;

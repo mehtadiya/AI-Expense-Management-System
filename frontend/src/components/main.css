@@ -1,0 +1,89 @@
+/* 🔹 Default (Desktop) */
+.sidebar-text {
+  display: inline;
+}
+.main-col{
+    width: 16%;
+    color:#0A382B ;
+}
+
+
+/* 🔹 Mobile Devices */
+@media (max-width: 576px) {
+
+  .main-header {
+    text-align: center;
+    padding: 10px;
+  }
+  .main-col{
+    width: 26%;
+    color:#0A382B ;
+}
+
+  .app-title {
+    font-size: 18px !important;
+  }
+
+  .welcome-text {
+    font-size: 14px !important;
+    margin-top: 5px;
+  }
+
+  .icon-box {
+    width: 35px !important;
+    height: auto;
+  }
+
+  
+  .sidebar-col {
+    width: 70px !important;
+    padding: 0 !important;
+    height: auto;
+  }
+
+  
+  .sidebar-text {
+    display: none;
+  }
+
+  
+  .nav-item {
+    justify-content: center !important;
+    padding: 12px 0 !important;
+  }
+
+  .nav-item i {
+    margin: 0 !important;
+    font-size: 20px !important;
+  }
+
+  /* ✅ Full width content */
+  .content-col {
+    width: calc(100% - 70px) !important;
+    margin: 0 !important;
+  }
+}
+
+/* 🔹 Tablets */
+@media (max-width: 992px) {
+
+  .sidebar-col {
+    width: 90px !important;
+  }
+
+  .content-col {
+    width: calc(100% - 90px) !important;
+  }
+}
+
+/* 🔹 Large Screens */
+@media (min-width: 1200px) {
+
+  .app-title {
+    font-size: 22px;
+  }
+
+  .welcome-text {
+    font-size: 18px;
+  }
+}

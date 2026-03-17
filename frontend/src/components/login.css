@@ -1,0 +1,35 @@
+/* 🔹 Mobile Devices */
+@media (max-width: 576px) {
+  .login-box {
+    width: 90% !important;
+    padding: 20px !important;
+  }
+
+  .login-title {
+    font-size: 20px !important;
+  }
+
+  .form-control {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .btn {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+
+/* 🔹 Tablets */
+@media (max-width: 768px) {
+  .login-box {
+    width: 80% !important;
+  }
+}
+
+/* 🔹 Large Screens */
+@media (min-width: 1200px) {
+  .login-box {
+    width: 400px;
+  }
+}

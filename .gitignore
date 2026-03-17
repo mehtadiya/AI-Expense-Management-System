@@ -1,0 +1,9 @@
+# Node / React
+node_modules/
+build/
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pkl   # optional: if you don't want to push model files

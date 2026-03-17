@@ -1,0 +1,56 @@
+/* 🔹 Mobile Devices */
+@media (max-width: 576px) {
+
+  .dashboard-title {
+    font-size: 20px !important;
+  }
+
+  .summary-card h2 {
+    font-size: 18px !important;
+  }
+
+  .summary-card .fs-6 {
+    font-size: 13px !important;
+  }
+
+  .budget-card {
+    height: auto !important;
+    padding: 15px !important;
+  }
+
+  .calendar-card {
+    height: auto !important;
+    margin-top: 10px;
+  }
+
+  .table-responsive {
+    height: 150px !important;
+  }
+
+  .table th,
+  .table td {
+    font-size: 12px;
+  }
+}
+
+
+/* 🔹 Tablets */
+@media (max-width: 992px) {
+
+  .budget-card {
+    height: auto !important;
+  }
+
+  .calendar-card {
+    height: auto !important;
+  }
+}
+
+
+/* 🔹 Large Screens */
+@media (min-width: 1200px) {
+
+  .summary-card h2 {
+    font-size: 28px;
+  }
+}
