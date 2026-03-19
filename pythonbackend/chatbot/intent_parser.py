@@ -5,7 +5,7 @@ import re
 # It is used to extract numbers from user text.
 
 
-NODE_API = "http://localhost:3002"
+NODE_API = "https://expense-management-2-ez4q.onrender.com"
 
 
 def execute_intent(intent, text, token):
