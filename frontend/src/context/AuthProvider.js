@@ -36,10 +36,6 @@ export const AuthProvider=({children})=>{
             loginAuth,
             logoutAuth,
             isAuthenticated:user!==null,
-            isAdmin:user?.role==="admin",
-            isReceptionist:user?.role==="receptionist",
-            isPatient:user?.role==="patient",
-            isDoctor:user?.role==="doctor"
             }}>
             {children}
     </AuthContext.Provider>

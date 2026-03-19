@@ -42,7 +42,7 @@ function AddExpense() {
 
   return (
     <div className="container-fluid py-3">
-      {/* Header */}
+      {/* Header */}                                        
       <div className="row mb-4">
         <div className="col-8">
           <h2 className="fw-bolder" style={{ color: "#0A382B" }}>

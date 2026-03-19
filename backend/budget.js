@@ -1,41 +1,62 @@
 const express = require('express');
-const { sql, poolPromise } = require('./index.js');
+const { pool } = require('./index.js');
 const verifyToken = require('./middleware/verifyToken.js');
-const router = express.Router()
-require('dotenv').config()
+const router = express.Router();
 
+require('dotenv').config();
 
-//fetch categories having budget
-router.get('/budgets',verifyToken, async (req, res) => {
+// GET CATEGORIES HAVING BUDGET
+router.get('/budgets', verifyToken, async (req, res) => {
     try {
-        const pool = await poolPromise;
-        const  userID  = req.user.userID;
-        const result = await pool.request()
-            .input('userID', sql.Int, userID)
-            .query("select c.categoryID,c.category,b.budgetID,b.userID,i.iconID,i.icon,i.color,b.amountLimit,b.durationID from category c join budget b on c.categoryID=b.categoryID join icon i on c.iconID=i.iconID where b.userID=@userID")
-        res.send(result.recordset);
+        const userID = req.user.userID;
+
+        const result = await pool.query(`
+            SELECT
+              c.categoryid AS "categoryID",
+              c.category,
+              b.budgetid AS "budgetID",
+              b.userid AS "userID",
+              i.iconid AS "iconID",
+              i.icon,
+              i.color,
+              b.amountlimit AS "amountLimit",
+              b.fromdate AS "fromDate",
+              b.todate AS "toDate"
+            FROM category c
+            JOIN budget b ON c.categoryid = b.categoryid
+            JOIN icon i ON c.iconid = i.iconid
+            WHERE b.userid = $1
+        `, [userID]);
+
+        res.json(result.rows);
+
     } catch (error) {
         console.log("error", error);
-        res.send("error in fetching categories having budget")
+        res.status(500).send("error in fetching categories having budget");
     }
-})
+});
 
-//to fetch total expense done by user 
+// TOTAL EXPENSE PER CATEGORY
 router.get('/budgets/totalExpense/:userID', async (req, res) => {
     try {
-        const pool = await poolPromise;
         const { userID } = req.params;
-        const result = await pool.request()
-            .input('userID', sql.Int, userID)
-            .query("select categoryID,sum(expenseAmount) as total from expense where userID=@userID group by categoryID ")
-        res.send(result.recordset)
+
+        const result = await pool.query(`
+            SELECT categoryid AS "categoryID", SUM(expenseamount) AS total
+            FROM expense
+            WHERE userid = $1
+            GROUP BY categoryid
+        `, [userID]);
+
+        res.json(result.rows);
+
     } catch (error) {
         console.log("error", error);
-        res.send("error in fetching categories having budget")
+        res.status(500).send("error fetching total expense");
     }
-})
+});
 
-//to add Totalbudget 
+// ADD TOTAL BUDGET
 router.post("/budgets/add", verifyToken, async (req, res) => {
     try {
         const { fromDate, toDate, categoryID, amountLimit } = req.body;
@@ -44,39 +65,30 @@ router.post("/budgets/add", verifyToken, async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const pool = await poolPromise;
         const userID = req.user.userID;
-        if (categoryID === null) {
-            const overlapCheck = await pool.request()
-                .input("userID", sql.Int, userID)
-                .input("fromDate", sql.Date, fromDate)
-                .input("toDate", sql.Date, toDate)
-                .query(`
-                    SELECT 1
-                    FROM Budget
-                    WHERE categoryID IS NULL
-                    AND @fromDate <= toDate
-                    AND @toDate >= fromDate
-                    AND userID=@userID
-                `);
 
-            if (overlapCheck.recordset.length > 0) {
+        // CHECK OVERLAP (TOTAL BUDGET)
+        if (categoryID === null) {
+            const overlapCheck = await pool.query(`
+                SELECT 1
+                FROM budget
+                WHERE categoryid IS NULL
+                AND $1 <= todate
+                AND $2 >= fromdate
+                AND userid = $3
+            `, [fromDate, toDate, userID]);
+
+            if (overlapCheck.rows.length > 0) {
                 return res.status(409).json({
                     message: "Total budget already exists for this date range"
                 });
             }
         }
 
-        await pool.request()
-            .input("userID", sql.Int, userID)
-            .input("fromDate", sql.Date, fromDate)
-            .input("toDate", sql.Date, toDate)
-            .input("categoryID", sql.Int, categoryID)
-            .input("amountLimit", sql.Decimal(10, 2), amountLimit)
-            .query(`
-                INSERT INTO Budget (userID,fromDate, toDate, categoryID, amountLimit)
-                VALUES (@userID,@fromDate, @toDate, @categoryID, @amountLimit)
-            `);
+        await pool.query(`
+            INSERT INTO budget (userid, fromdate, todate, categoryid, amountlimit)
+            VALUES ($1, $2, $3, $4, $5)
+        `, [userID, fromDate, toDate, categoryID, amountLimit]);
 
         res.status(201).json({ message: "Budget added successfully" });
 
@@ -86,31 +98,23 @@ router.post("/budgets/add", verifyToken, async (req, res) => {
     }
 });
 
-//to add Category wise budget
+// ADD CATEGORY-WISE BUDGET
 router.post("/budgets/addCategoryWise", verifyToken, async (req, res) => {
     try {
         const { fromDate, toDate, categoryAmount } = req.body;
+
         if (!fromDate || !toDate) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const pool = await poolPromise;
         const userID = req.user.userID;
 
         for (const [categoryID, amountLimit] of Object.entries(categoryAmount)) {
-            await pool.request()
-                .input("userID", sql.Int, userID)
-                .input("fromDate", sql.Date, fromDate)
-                .input("toDate", sql.Date, toDate)
-                .input("categoryID", sql.Int, categoryID)
-                .input("amountLimit", sql.Decimal(10, 2), amountLimit)
-                .query(`
-                INSERT INTO Budget (userID,fromDate, toDate, categoryID, amountLimit)
-                VALUES (@userID,@fromDate, @toDate, @categoryID, @amountLimit)
-              `);
+            await pool.query(`
+                INSERT INTO budget (userid, fromdate, todate, categoryid, amountlimit)
+                VALUES ($1, $2, $3, $4, $5)
+            `, [userID, fromDate, toDate, categoryID, amountLimit]);
         }
-
-
 
         res.status(201).json({ message: "Budget added successfully" });
 
@@ -120,4 +124,4 @@ router.post("/budgets/addCategoryWise", verifyToken, async (req, res) => {
     }
 });
 
-module.exports = router
+module.exports = router;

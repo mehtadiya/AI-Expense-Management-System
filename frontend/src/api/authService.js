@@ -7,7 +7,6 @@ export const loginService=async (data)=>{
     console.log("response",response.data);
     if(response.data){
         localStorage.setItem("token",response.data.token);
-      
         localStorage.setItem("user",JSON.stringify(response.data.user));
   
     }

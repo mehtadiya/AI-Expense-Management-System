@@ -1,42 +1,49 @@
-const express=require('express');
-const {sql,poolPromise }=require('./index.js');
+const express = require('express');
+const { pool } = require('./index.js');
 const verifyToken = require('./middleware/verifyToken.js');
-const router=express.Router();
-require('dotenv').config;
+const router = express.Router();
 
-//add duration
-router.post('/duration/add',async(req,res)=>{
-    try{
-    const pool=await poolPromise;
-    const {fromDate,toDate}=req.body;
-    const result=await pool.request()
-    .input('fromDate',sql.DateTime,fromDate)
-    .input('toDate',sql.DateTime,toDate)
-    .query('insert into duration (fromDate,toDate) values(@fromDate,@toDate)')
+require('dotenv').config();
 
-     if (result.rowsAffected[0] > 0) {
-      res.status(200).send({ message: "duration addedd successfully" });
-    } else {
-      res.status(404).send({ message: "duration not found" });
+// ADD DURATION
+router.post('/duration/add', async (req, res) => {
+    try {
+        const { fromDate, toDate } = req.body;
+
+        const result = await pool.query(
+            `INSERT INTO duration (fromdate, todate)
+             VALUES ($1, $2)`,
+            [fromDate, toDate]
+        );
+
+        if (result.rowCount > 0) {
+            res.status(200).send({ message: "duration added successfully" });
+        } else {
+            res.status(400).send({ message: "duration not added" });
+        }
+
+    } catch (error) {
+        console.error("Error adding duration:", error);
+        res.status(500).send({ message: "Server error while adding duration" });
     }
-  } catch (error) {
-    console.error("Error adding duration:", error);
-    res.status(500).send({ message: "Server error while adding duration" });
-  }
-})
+});
 
-// 
-router.get('/duration',verifyToken,async(req,res)=>{
-    try{
-        const pool=await poolPromise;
-        const result=await pool.request()
-        .query("select * from budget ")
-        res.send(result.recordset)
-    }catch(error){
-        console.log("error",error);
-        res.send("cannot fetch duration")
+// GET DURATION
+router.get('/duration', verifyToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+          SELECT
+            durationid AS "durationID",
+            fromdate AS "fromDate",
+            todate AS "toDate"
+          FROM duration
+          ORDER BY durationid DESC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.log("error", error);
+        res.status(500).send("cannot fetch duration");
     }
-    
-})
+});
 
-module.exports=router;
+module.exports = router;

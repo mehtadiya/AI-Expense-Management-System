@@ -162,7 +162,7 @@ useEffect( () => {
         Swal.showValidationMessage("Please fill out all fields");
         return false;
       }
-
+      console.log("iconID",iconID);
       return { category, iconID };
     },
   }).then(async (result) => {

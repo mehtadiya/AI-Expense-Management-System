@@ -1,23 +1,25 @@
-const express=require('express');
-const {sql, poolPromise} = require('./index.js');
+const express = require('express');
+const { pool } = require('./index.js');
 const verifyToken = require('./middleware/verifyToken.js');
-const router=express.Router();
+const router = express.Router();
 
 require('dotenv').config();
 
-//get all icons
-router.get('/icons',verifyToken,async(req,res)=>{
-    try{
-         const pool= await poolPromise;
-        
-        const result=await pool.request()
-        .query("select * from icon");
-        res.send(result.recordset);
-    }catch(error){
-        console.log("error",error);
-        res.send("error for fetching recent expenses")
+// get all icons
+router.get('/icons', verifyToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+          SELECT
+            iconid AS "iconID",
+            icon,
+            color
+          FROM icon
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.log("error", error);
+        res.status(500).send("error for fetching icons");
     }
-   
-})
+});
 
-module.exports=router;
+module.exports = router;

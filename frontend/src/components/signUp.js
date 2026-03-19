@@ -63,10 +63,10 @@ function SignupPage() {
         userName: formData.userName,
         email: formData.email,
         password: formData.password,
-        userImage: formData.userImage,   
+        userImage: null,   
       }, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
         }
       });
 

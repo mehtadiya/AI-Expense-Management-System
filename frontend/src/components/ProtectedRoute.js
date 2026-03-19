@@ -1,37 +1,36 @@
-// import { Navigate } from "react-router-dom";
-// import { isTokenValid } from "../utils/auth";
-
-// const ProtectedRoute = ({ children }) => {
-//   if (!isTokenValid()) {
-//     localStorage.removeItem("token");
-//     localStorage.removeItem("user");
-//     return <Navigate to="/login" replace />;
-//   }
-
-//   return children;
-// };
-
-// export default ProtectedRoute;
-
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
 import { useEffect } from "react";
+import { isTokenValid } from "../utils/auth";
+import { getToken } from "../api/authService";
 
-function ProtectedRoute({children}){
-     const navigate=useNavigate();
-    const {loading,isAuthenticated,user}=useAuth();
-    if(loading){
-        return <h1>Loading....</h1>
-    }
+function ProtectedRoute({ children }) {
+    const navigate = useNavigate();
+    const { loading, isAuthenticated, logoutAuth } = useAuth();
 
-    if(!isAuthenticated){
-        navigate("/login");
-    }
-   
+    useEffect(() => {
+        if (!loading) {
+            const valid = isTokenValid();
+            const token=getToken();
 
-   
+            if (!token) {
+                // Clear user data
+                logoutAuth();
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+
+                // Redirect to login
+                navigate("/login");
+            }
+        }
+    }, [loading, navigate, logoutAuth]);
+
+    if (loading) return <h1>Loading...</h1>;
+
+    // Only render children if authenticated AND token is valid
+    if (!isAuthenticated ) return null;
 
     return children;
 }
 
-export default ProtectedRoute
+export default ProtectedRoute;

@@ -1,55 +1,66 @@
 require("dotenv").config();
 const express = require('express');
-const { sql, poolPromise } = require('./index.js');
+const { pool } = require('./index.js');
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const verifyToken=require("./middleware/verifyToken.js")
+const verifyToken = require("./middleware/verifyToken.js");
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
-
-router.get('/users',verifyToken, async (req, res) => {
+// GET ALL USERS
+router.get('/users', async (req, res) => {
   try {
-    const pool = await poolPromise;
-    const result = await pool.request().query("select * from users");
-    res.send(result.recordset);
-  }
-  catch (error) {
+    const result = await pool.query(`
+      SELECT
+        userid AS "userID",
+        username AS "userName",
+        email
+      FROM users
+    `);
+    res.json(result.rows);
+  } catch (error) {
     console.log("error:", error);
-    res.send("error for fetching user table");
+    res.status(500).send("error for fetching user table");
   }
-})
+});
 
+// LOGIN
 router.post("/users/login", async (req, res) => {
   try {
-    const pool = await poolPromise;
     const { email, password } = req.body;
 
-    const result = await pool
-      .request()
-      .input("email", sql.VarChar, email)
-      .input("password", sql.VarChar, password)
-      .query("SELECT * FROM users WHERE email=@email AND password=@password");
-    
-    if (result.recordset.length === 0) {
-      return res.status(401).json({ message: "Invalid email or password" });
+    const query = `
+      SELECT userid, username, email
+      FROM users
+      WHERE email = $1 AND password = $2
+    `;
 
+    const result = await pool.query(query, [email, password]);
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const user = result.recordset[0];
+    const user = result.rows[0];
 
-    const token = jwt.sign({
-      userID: user.userID,
-      userName: user.userName,
-      email: user.email,
-    },
+    const token = jwt.sign(
+      {
+        userID: user.userid,
+        userName: user.username,
+        email: user.email
+      },
       JWT_SECRET,
       { expiresIn: "1h" }
-    )
+    );
 
     res.json({
       token,
-      user
-    })
+      user: {
+        userID: user.userid,
+        userName: user.username,
+        email: user.email
+      }
+    });
 
   } catch (err) {
     console.error(err);
@@ -57,70 +68,83 @@ router.post("/users/login", async (req, res) => {
   }
 });
 
-
-//get specific details from userID
-
-router.get('/usersByID',verifyToken, async (req, res) => {
+// GET USER BY ID (FROM TOKEN)
+router.get('/usersByID', verifyToken, async (req, res) => {
   try {
-    const pool = await poolPromise;
-    const  userID  = req.user.userID;
-    const result = await pool.request()
-      .input("userID", sql.Int, userID)
-      .query("select * from users where userID=@userID");
-    res.send(result.recordset);
-  }
-  catch (error) {
+    const userID = req.user.userID;
+
+    const result = await pool.query(
+      `
+        SELECT
+          userid AS "userID",
+          username AS "userName",
+          email
+        FROM users
+        WHERE userid = $1
+      `,
+      [userID]
+    );
+
+    res.json(result.rows);
+
+  } catch (error) {
     console.log("error:", error);
-    res.send("error for fetching user table");
+    res.status(500).send("error for fetching user");
   }
-})
+});
 
-router.put('/users/edit',verifyToken, async (req, res) => {
+// UPDATE USER
+router.put('/users/edit', verifyToken, async (req, res) => {
   try {
-    const pool = await poolPromise;
-    const  userID  = req.user.userID;
+    const userID = req.user.userID;
     const { userName, email } = req.body;
-    const result = await pool.request()
-      .input("userID", sql.Int, userID)
-      .input("userName", sql.VarChar(50), userName)
-      .input("email", sql.VarChar(50), email)
-      .query(`update users set userName=@userName , email=@email where userID=@userID `)
-    if (result.rowsAffected > 0) {
+
+    const result = await pool.query(
+      `UPDATE users 
+       SET username = $1, email = $2 
+       WHERE userid = $3`,
+      [userName, email, userID]
+    );
+
+    if (result.rowCount > 0) {
       res.status(200).send({ message: "user updated successfully" });
     } else {
       res.status(404).send({ message: "user not found" });
     }
+
   } catch (error) {
-    console.error("Error updating expense:", error);
-    res.status(500).send({ message: "Server error while updating expense" });
+    console.error("Error updating user:", error);
+    res.status(500).send({ message: "Server error while updating user" });
   }
+});
 
-})
-
-//change password
-router.put('/changePassword',verifyToken, async (req, res) => {
+// CHANGE PASSWORD
+router.put('/changePassword', verifyToken, async (req, res) => {
   try {
-    const pool = await poolPromise;
-    const  userID  = req.user.userID;
+    const userID = req.user.userID;
     const { password, newPassword, confirmPassword } = req.body;
+
     if (newPassword !== confirmPassword) {
-      return res.status(400).send({ message: "New password and confirm password do not match" });
+      return res.status(400).send({ message: "Passwords do not match" });
     }
-    const result = await pool.request()
-      .input("userID", sql.Int, userID)
-      .input("password", sql.VarChar(50), password)
-      .input("newPassword", sql.VarChar(50), newPassword)
-      .query(`update users set password=@newPassword where userID=@userID  and password=@password`)
-    if (result.rowsAffected > 0) {
+
+    const result = await pool.query(
+      `UPDATE users 
+       SET password = $1 
+       WHERE userid = $2 AND password = $3`,
+      [newPassword, userID, password]
+    );
+
+    if (result.rowCount > 0) {
       res.status(200).send({ message: "password changed successfully" });
     } else {
-      res.status(404).send({ message: "password can not be changes" });
+      res.status(400).send({ message: "Invalid current password" });
     }
+
   } catch (error) {
-    console.error("Error updating expense:", error);
-    res.status(500).send({ message: "Server error while updating expense" });
+    console.error("Error updating password:", error);
+    res.status(500).send({ message: "Server error while updating password" });
   }
+});
 
-})
-
-module.exports = router
+module.exports = router;

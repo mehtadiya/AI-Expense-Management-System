@@ -26,3 +26,5 @@ app.use('/',signup)
 app.listen(3002,()=>{
     console.log("server started at 3002");
 })
+
+

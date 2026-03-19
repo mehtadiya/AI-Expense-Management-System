@@ -1,120 +1,129 @@
-const {sql,poolPromise} =require('./index.js');
-const express= require('express');
+const express = require('express');
+const { pool } = require('./index.js');
 const verifyToken = require('./middleware/verifyToken.js');
-const router=express.Router();
+const router = express.Router();
 
 require('dotenv').config();
 
-//return details of category of specific user
-router.get('/categories',verifyToken,async(req,res)=>{
-    try{
-        const pool=await poolPromise;
-        const userID=  req.user.userID;
-        const result= await pool.request()
-        .input('userID',userID)
-        .query("select c.categoryID,c.category,c.userID,c.iconID,i.icon,i.color from category c join icon i on c.iconID=i.iconID  where userID=@userID");
-        res.send(result.recordset);
-    }
-    catch(error){
-        console.log("error:",error);
-        res.send("error in fetching category table");
-    }
-})
+// GET USER CATEGORIES
+router.get('/categories', verifyToken, async (req, res) => {
+    try {
+        const userID = req.user.userID;
 
-//return category and budget details
-router.get('/categoriesBudgets',verifyToken,async(req,res)=>{
-    try{
-        const pool=await poolPromise;
-        const userID=  req.user.userID;
-        const result= await pool.request()
-        .input('userID',userID)
-        .query("select c.categoryID,c.category,c.userID,c.iconID,i.icon,i.color, b.amountLimit,b.fromDate,b.toDate from category c join icon i on c.iconID=i.iconID  join budget b on c.categoryID=b.categoryID where c.userID=@userID");
-        res.send(result.recordset);
-    }
-    catch(error){
-        console.log("error:",error);
-        res.send("error in fetching category and budget details");
-    }
-})
-//delete category from that specific user
-router.delete("/categories/:categoryID",verifyToken, async (req, res) => {
-  const { categoryID } = req.params;
-  const  userID = req.user.userID;
-  const pool= await poolPromise;
-  try {
-    await pool
-      .request()
-      .input("categoryID", sql.Int, categoryID)
-      .input("userID", sql.Int, userID)
-      .query(`
-        DELETE FROM Expense WHERE categoryID=@categoryID AND userID=@userID;
-        DELETE FROM Category WHERE categoryID=@categoryID AND userID=@userID;
-      `);
+        const result = await pool.query(`
+            SELECT
+              c.categoryid AS "categoryID",
+              c.category,
+              c.userid AS "userID",
+              c.iconid AS "iconID",
+              i.icon,
+              i.color
+            FROM category c
+            JOIN icon i ON c.iconid = i.iconid
+            WHERE c.userid = $1
+        `, [userID]);
 
-    res.status(200).json({ message: "Category deleted successfully" });
-  } catch (err) {
-    console.error("Error deleting category:", err);
-    res.status(500).send("Server error while deleting category");
-  }
+        res.json(result.rows);
+
+    } catch (error) {
+        console.log("error:", error);
+        res.status(500).send("error in fetching category table");
+    }
 });
 
+// GET CATEGORY + BUDGET
+router.get('/categoriesBudgets', verifyToken, async (req, res) => {
+    try {
+        const userID = req.user.userID;
 
-router.put("/categories/:categoryID",verifyToken, async (req, res) => {
-  try {
-    const pool = await poolPromise;
-    const { categoryID } = req.params;
-    const { category,iconID } = req.body;
+        const result = await pool.query(`
+            SELECT
+              c.categoryid AS "categoryID",
+              c.category,
+              c.userid AS "userID",
+              c.iconid AS "iconID",
+              i.icon,
+              i.color,
+              b.amountlimit AS "amountLimit",
+              b.fromdate AS "fromDate",
+              b.todate AS "toDate"
+            FROM category c
+            JOIN icon i ON c.iconid = i.iconid
+            JOIN budget b ON c.categoryid = b.categoryid
+            WHERE c.userid = $1
+        `, [userID]);
 
-    const result = await pool.request()
-      .input("categoryID", sql.Int, categoryID)
-      .input("iconID", sql.Int, iconID)
-      .input("category", sql.VarChar(50), category)
-      .query(`
-        UPDATE category 
-        SET iconID = @iconID,
-            category = @category
-        WHERE categoryID = @categoryID
-      `);
+        res.json(result.rows);
 
-    if (result.rowsAffected[0] > 0) {
-      res.status(200).send({ message: "category updated successfully" });
-    } else {
-      res.status(404).send({ message: "category not found" });
+    } catch (error) {
+        console.log("error:", error);
+        res.status(500).send("error in fetching category and budget details");
     }
-  } catch (error) {
-    console.error("Error updating category:", error);
-    res.status(500).send({ message: "Server error while updating category" });
-  }
 });
 
-router.post("/categories/add", verifyToken,async (req, res) => {
-  try {
-    const pool = await poolPromise;
-    const userID = req.user.userID;
-    const { category, iconID } = req.body;
+// DELETE CATEGORY (WITH EXPENSE)
+router.delete("/categories/:categoryID", verifyToken, async (req, res) => {
+    try {
+        const { categoryID } = req.params;
+        const userID = req.user.userID;
 
-    const result = await pool.request()  
-      .input("category", sql.VarChar(50), category)
-      .input("userID", sql.Int, userID)
-      .input("iconID", sql.Int, iconID)
-      .query(`
-        INSERT INTO category (category, userID, iconID)
-        VALUES (@category, @userID, @iconID)
-      `);
+        // Run both deletes safely
+        await pool.query("DELETE FROM expense WHERE categoryid = $1 AND userid = $2", [categoryID, userID]);
+        await pool.query("DELETE FROM category WHERE categoryid = $1 AND userid = $2", [categoryID, userID]);
 
-    
+        res.status(200).json({ message: "Category deleted successfully" });
 
-    if (result.rowsAffected && result.rowsAffected[0] > 0) {
-      res.status(200).send({ message: "Category added successfully" });
-    } else {
-      res.status(400).send({ message: "Category not added" });
+    } catch (err) {
+        console.error("Error deleting category:", err);
+        res.status(500).send("Server error while deleting category");
     }
-  } catch (error) {
-    console.error("Error adding category:", error);
-    res.status(500).send({ message: "Server error while adding category" });
-  }
 });
 
+// UPDATE CATEGORY
+router.put("/categories/:categoryID", verifyToken, async (req, res) => {
+    try {
+        const { categoryID } = req.params;
+        const { category, iconID } = req.body;
 
+        const result = await pool.query(`
+            UPDATE category
+            SET iconid = $1,
+                category = $2
+            WHERE categoryid = $3
+        `, [iconID, category, categoryID]);
 
-module.exports=router;
+        if (result.rowCount > 0) {
+            res.status(200).send({ message: "category updated successfully" });
+        } else {
+            res.status(404).send({ message: "category not found" });
+        }
+
+    } catch (error) {
+        console.error("Error updating category:", error);
+        res.status(500).send({ message: "Server error while updating category" });
+    }
+});
+
+// ADD CATEGORY
+router.post("/categories/add", verifyToken, async (req, res) => {
+    try {
+        const userID = req.user.userID;
+        const { category, iconID } = req.body;
+        const result = await pool.query(`
+            INSERT INTO category (category, userid, iconid)
+            VALUES ($1, $2, $3)
+        `, [category, userID, iconID]);
+
+        if (result.rowCount > 0) {
+            res.status(200).send({ message: "Category added successfully" });
+        } else {
+            res.status(400).send({ message: "Category not added" });
+        }
+
+    } catch (error) {
+        console.error("Error adding category:", error);
+        res.status(500).send({ message: "Server error while adding category" });
+    }
+});
+
+module.exports = router;

@@ -1,10 +1,9 @@
 import SetBudget from "./setCategoricalBudget";
-import { use } from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../api/api";
-const API_URL=process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 function Budget(){
     const [duration,setDuration]=useState([]);
@@ -15,24 +14,22 @@ function Budget(){
     //to fetch duration for select box
     useEffect(()=>{
         api.get("/duration")
-        .then(res=>{setDuration(res)
-        })
+        .then(res=>{setDuration(res.data)})
     },[])
 
     //to fetch all categories which have budget
     useEffect(()=>{
-        fetch(`${API_URL}/budgets/${userID}`)
-        .then(res=>res.json())
-        .then(res=>{setCategoryHavingBudget(res)
-            console.log("setCategoryHavingBudget",res)
-        })
+        api.get(`/budgets`)
+          .then(res => {
+            setCategoryHavingBudget(res.data);
+            console.log("setCategoryHavingBudget", res.data);
+          })
     },[])
 
     //to fetch total expense done by user 
      useEffect(()=>{
-        fetch(`${API_URL}/budgets/totalExpense/${userID}`)
-        .then(res=>res.json())
-        .then(res=>setTotalExpense(res))
+        api.get(`/budgets/totalExpense/${userID}`)
+          .then(res => setTotalExpense(res.data))
     },[])
 
     const handleAddDuration=()=>{

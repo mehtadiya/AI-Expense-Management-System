@@ -20,6 +20,7 @@ const verifyToken = (req, res, next) => {
     // 4. Attach decoded data to request
     req.user = decoded;
     next();
+   
   });
 };
 
