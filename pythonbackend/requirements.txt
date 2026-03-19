@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+requests
+scikit-learn
+python-dotenv
+torch --index-url https://download.pytorch.org/whl/cpu
+openai-whisper
