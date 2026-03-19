@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from chatbot.chatbot import detect_intent
 import whisper
 import tempfile, os
+from dotenv import load_dotenv
 import requests
 import re
 import datetime
@@ -20,8 +21,9 @@ app.add_middleware(
 print("Loading Whisper model...")
 model = whisper.load_model("base.en")
 print("Whisper loaded!")
+load_dotenv()
 
-NODE_API = "https://expense-management-2-ez4q.onrender.com"
+NODE_API = os.getenv("DB_URL")
 
 # ----------- DATE EXTRACTOR -----------
 def extract_date(text: str):

@@ -3,9 +3,12 @@ import requests
 import re
 # re stands for Regular Expressions.
 # It is used to extract numbers from user text.
+import  os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-NODE_API = "https://expense-management-2-ez4q.onrender.com"
+NODE_API = os.getenv("DB_URL")
 
 
 def execute_intent(intent, text, token):
