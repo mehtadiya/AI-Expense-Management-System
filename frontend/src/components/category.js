@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../api/api";
-import getUserFromToken from "../utils/auth";
+import { useAuth } from "../context/AuthProvider";
 
 function CategoryPage() {
   const [categories, setCategory] = useState([]);
   const [icons, setIcons] = useState([]);
-  const user=getUserFromToken()
+  const user=useAuth()
   const userID=user?.userID;
 
   useEffect( ()=>{

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../api/api";
-import getUserFromToken from "../utils/auth";
+import { useAuth } from "../context/AuthProvider";
 const API_URL = process.env.REACT_APP_API_URL;
 
 function SetTotalBudget() {
@@ -11,7 +11,7 @@ function SetTotalBudget() {
     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
     const lastDate = `${lastDay.getFullYear()}-${String(lastDay.getMonth() + 1).padStart(2, "0")}-${String(lastDay.getDate()).padStart(2, "0")}`;
-    const user = getUserFromToken()
+    const user = useAuth()
     const userID = user?.userID;
 
     const [duration, setDuration] = useState([]);

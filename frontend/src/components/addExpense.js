@@ -7,13 +7,14 @@ import Online from "./addOnline";
 import Scan from "./addScan";
 import RecordAudio from "./addAudio";
 import { Link, useParams } from "react-router-dom";
-import getUserFromToken from "../utils/auth";
+import { useAuth } from "../context/AuthProvider";
 
-const user=getUserFromToken();
-const userID=user ?.userID;
 
 function AddExpense() {
     const [selectedOption,setSelectedOption]=useState(null);
+  
+const user=useAuth();
+const userID=user ?.userID;
 
   const options = [
     { title: "Manual", icon: "bi bi-pencil-square", color: "#198754" ,option:"Manual" },
