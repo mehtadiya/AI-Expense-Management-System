@@ -176,13 +176,11 @@ router.post("/budgets/addCategoryWise", verifyToken, async (req, res) => {
                 });
             }
 
-            if (totalBudget !== null) {
-                if (currentSum + amount > totalBudget) {
-                    await client.query("ROLLBACK");
-                    return res.status(400).json({
-                        message: `Category budgets exceed total budget (${totalBudget})`
-                    });
-                }
+            if (totalBudget !== null && currentSum + amount > totalBudget) {
+                await client.query("ROLLBACK");
+                return res.status(400).json({
+                    message: `Category budgets exceed total budget (${totalBudget})`
+                });
             }
 
             await client.query(`
@@ -191,6 +189,13 @@ router.post("/budgets/addCategoryWise", verifyToken, async (req, res) => {
             `, [userID, fromDate, toDate, categoryID, amount]);
 
             currentSum += amount;
+        }
+
+        if (totalBudget !== null && currentSum !== totalBudget) {
+            await client.query("ROLLBACK");
+            return res.status(400).json({
+                message: `Total of category budgets (${currentSum}) must equal total budget (${totalBudget})`
+            });
         }
 
         await client.query("COMMIT");
