@@ -3,10 +3,13 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./login.css";
 import { loginService } from "../api/authService";
+import { useAuth } from "../context/AuthProvider";
+
+
 
 function LoginPage() {
   const navigate = useNavigate();
-
+  const { loginAuth } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -20,16 +23,19 @@ function LoginPage() {
 
  
 
-  const handleLogin = async (e)=>{
-    e.preventDefault()
+  const handleLogin = async (e) => {
+  e.preventDefault();
+
+  try {
     const response = await loginService(formData);
-        if (response.error) {
-            setError(response.error);
-        } else {
-            navigate("/main/dashboard");
-        }
-    
+
+    loginAuth(response.user); 
+
+    navigate("/main/dashboard");
+  } catch (err) {
+    setError("Invalid credentials");
   }
+};
 
   return (
     <div

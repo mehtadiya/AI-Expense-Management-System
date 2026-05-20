@@ -5,6 +5,30 @@ const router = express.Router();
 
 require('dotenv').config();
 
+// EXPENSE DATA (GROUP)
+router.get('/expenseData', verifyToken, async (req, res) => {
+    try {
+        const userID = req.user.userID;
+
+        const result = await pool.query(`
+            SELECT
+              categoryid AS "categoryID",
+              SUM(expenseamount) AS total,
+              expensedate AS "expenseDate",
+              expenseamount AS "expenseAmount"
+            FROM expense
+            WHERE userid = $1
+            GROUP BY categoryid, expensedate, expenseamount
+        `, [userID]);
+
+        res.json(result.rows);
+
+    } catch (error) {
+        console.log("error", error);
+        res.status(500).send("error fetching expense data");
+    }
+});
+
 // RECENT 5 EXPENSES
 router.get('/recentExpenses', verifyToken, async (req, res) => {
     try {
@@ -36,6 +60,8 @@ router.get('/recentExpenses', verifyToken, async (req, res) => {
     }
 });
 
+
+
 // GET ALL EXPENSES (WITH FILTER)
 router.get('/expenses', verifyToken, async (req, res) => {
     try {
@@ -51,9 +77,11 @@ router.get('/expenses', verifyToken, async (req, res) => {
               e.note,
               e.expenseamount AS "expenseAmount",
               e.expensedate AS "expenseDate",
-              c.iconid AS "iconID"
+              c.iconid AS "iconID",
+              i.icon AS "icon"
             FROM expense e
             JOIN category c ON e.categoryid = c.categoryid
+            JOIN icon i ON i.iconid= c.iconid
             WHERE e.userid = $1
         `;
 
@@ -73,29 +101,7 @@ router.get('/expenses', verifyToken, async (req, res) => {
     }
 });
 
-// EXPENSE DATA (GROUP)
-router.get('/expenseData', verifyToken, async (req, res) => {
-    try {
-        const userID = req.user.userID;
 
-        const result = await pool.query(`
-            SELECT
-              categoryid AS "categoryID",
-              SUM(expenseamount) AS total,
-              expensedate AS "expenseDate",
-              expenseamount AS "expenseAmount"
-            FROM expense
-            WHERE userid = $1
-            GROUP BY categoryid, expensedate, expenseamount
-        `, [userID]);
-
-        res.json(result.rows);
-
-    } catch (error) {
-        console.log("error", error);
-        res.status(500).send("error fetching expense data");
-    }
-});
 
 // ADD SINGLE EXPENSE
 router.post('/expenses/add', verifyToken, async (req, res) => {

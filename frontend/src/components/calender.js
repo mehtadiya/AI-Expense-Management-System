@@ -1,11 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 
-/**
- * Props:
- * - initialDate: Date or ISO-string (optional) — initial selected date
- * - onChange: function(date: Date) called when user selects a date
- * - startMonth: Date or ISO-string (optional) — month to show initially
- */
+
 export default function Calendar({
   initialDate = null,
   onChange = () => {},
@@ -29,7 +24,6 @@ export default function Calendar({
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
 
-  /* 🔑 IMPORTANT: sync when parent changes initialDate */
   useEffect(() => {
     if (initialDate) {
       const d = new Date(initialDate);
@@ -38,7 +32,6 @@ export default function Calendar({
     }
   }, [initialDate]);
 
-  /* Helpers */
   const monthName = viewMonth.toLocaleString(undefined, {
     month: "long",
     year: "numeric",
@@ -57,7 +50,6 @@ export default function Calendar({
     0
   ).getDate();
 
-  /* Build calendar grid */
   const weeks = useMemo(() => {
     const grid = [];
     let currentDay = 1 - startWeekday;
@@ -180,7 +172,6 @@ export default function Calendar({
   );
 }
 
-/* Inline styles */
 const styles = {
   card: {
     width: "100%",

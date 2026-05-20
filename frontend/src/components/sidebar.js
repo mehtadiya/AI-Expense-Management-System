@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./sidebar.css";
 
-function Sidebar({userID}) {
+function Sidebar() {
     return (
         <>
 
@@ -42,32 +42,9 @@ function Sidebar({userID}) {
                 <span className="fw-semibold sidebar-text">setBudget</span>
             </Link>
 
-             {/* <Link
-                to={`/main/budget/1`}
-                className="nav-item d-flex align-items-center my-3 px-2 fs-5"
-                style={{ textDecoration: "none", color: "#F3FBF3" }}
-            >
-                <i className="bi bi-tags-fill fs-5 me-2 " style={{color: "#F3FBF3"}}></i>
-                <span className="fw-semibold sidebar-text">Budgets</span>
-            </Link> */}
+             
             
-            <Link
-                to={`/main/profile`}
-                className="nav-item d-flex align-items-center my-3 px-2 fs-5"
-                style={{ textDecoration: "none", color: "#F3FBF3" }}
-            >
-                <i className="bi bi-graph-up-arrow fs-5 me-2 " style={{color: "#F3FBF3"}}></i>
-                <span className="fw-semibold sidebar-text">Reports</span>
-            </Link>
-
-            <Link
-                to={`/main/dashboard/${userID}`}
-                className="nav-item d-flex align-items-center my-3 px-2 fs-5"
-                style={{ textDecoration: "none", color: "#F3FBF3" }}
-            >
-                <i className="bi bi-bell-fill fs-5 me-2 " style={{color: "#F3FBF3"}}></i>
-                <span className="fw-semibold sidebar-text">Alerts</span>
-            </Link>
+          
 
             <Link
                 to={`/main/chatbot`}
@@ -87,8 +64,26 @@ function Sidebar({userID}) {
                 <span className="fw-semibold sidebar-text">Profile</span>
             </Link>
 
+              <Link
+                to={`/main/reports`}
+                className="nav-item d-flex align-items-center my-3 px-2 fs-5"
+                style={{ textDecoration: "none", color: "#F3FBF3" }}
+            >
+                <i className="bi bi-graph-up-arrow fs-5 me-2 " style={{color: "#F3FBF3"}}></i>
+                <span className="fw-semibold sidebar-text">Reports</span>
+            </Link>
+
             <Link
-                to={`/main/dashboard/${userID}`}
+                to={`/main/alerts`}
+                className="nav-item d-flex align-items-center my-3 px-2 fs-5"
+                style={{ textDecoration: "none", color: "#F3FBF3" }}
+            >
+                <i className="bi bi-bell-fill fs-5 me-2 " style={{color: "#F3FBF3"}}></i>
+                <span className="fw-semibold sidebar-text">Alerts</span>
+            </Link>
+
+            <Link
+                to={`/main/about`}
                 className="nav-item d-flex align-items-center my-3 px-2 fs-5"
                 style={{ textDecoration: "none", color: "#F3FBF3" }}
             >

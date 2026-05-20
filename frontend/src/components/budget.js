@@ -1,208 +1,172 @@
-import SetBudget from "./setCategoricalBudget";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../api/api";
-const API_URL = process.env.REACT_APP_API_URL;
 
-function Budget(){
-    const [duration,setDuration]=useState([]);
-    const [categoryHavingBudget,setCategoryHavingBudget]=useState([]);
-    const [totalExpense,setTotalExpense]=useState([]);
-    const {userID}=useParams();
-    
-    //to fetch duration for select box
-    useEffect(()=>{
-        api.get("/duration")
-        .then(res=>{setDuration(res.data)})
-    },[])
+function Budget() {
+  const [budgets, setBudgets] = useState([]);
+  const [totalExpense, setTotalExpense] = useState([]);
+  const { userID } = useParams();
 
-    //to fetch all categories which have budget
-    useEffect(()=>{
-        api.get(`/budgets`)
-          .then(res => {
-            setCategoryHavingBudget(res.data);
-            console.log("setCategoryHavingBudget", res.data);
-          })
-    },[])
+  // FETCH BUDGETS
+  useEffect(() => {
+    api.get("/budgets")
+      .then(res => setBudgets(res.data))
+      .catch(err => console.log(err));
+  }, []);
 
-    //to fetch total expense done by user 
-     useEffect(()=>{
-        api.get(`/budgets/totalExpense/${userID}`)
-          .then(res => setTotalExpense(res.data))
-    },[])
+  // FETCH TOTAL EXPENSE
+  useEffect(() => {
+    api.get(`/budgets/totalExpense/${userID}`)
+      .then(res => setTotalExpense(res.data))
+      .catch(err => console.log(err));
+  }, [userID]);
 
-    const handleAddDuration=()=>{
-        Swal.fire({
-            title:"Add Duration",
-            html:`
-                 <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-4"><label><b>from Date:</b></label></div>
-                    <div class="col">
-                         <input type="date" id="fromDate" class="form-control" placeholder="From Date" >
+  // ADD BUDGET
+  const handleAddBudget = () => {
+    Swal.fire({
+      title: "Add Budget",
+      html: `
+        <input id="amountLimit" class="form-control mb-2" placeholder="Amount Limit">
 
-                    </div>
-                </div> 
-                <div class="row mb-2">
-                    <div class="col-4"><label><b>to Date:</b></label></div>
-                    <div class="col">
-                    <input type="date" id="toDate" class="form-control" placeholder="To Date">
-                    </div>
-                </div> 
-                  
-                
-                </div>
-            `,
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: "Add",
-        preConfirm:()=>{
-            const fromDate=document.getElementById('fromDate').value;
-            const toDate=document.getElementById('toDate').value;
-            if(!fromDate || !toDate){
-                Swal.showValidationMessage("please fill out the form");
-                return false;
-            }
-            if (new Date(fromDate) > new Date(toDate)) {
-                 Swal.showValidationMessage("From Date cannot be after To Date.");
-                return false;
-            }
-            return {fromDate,toDate}
+        <input id="fromDate" type="date" class="form-control mb-2">
+
+        <input id="toDate" type="date" class="form-control">
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: "Add",
+
+      preConfirm: () => {
+        const amountLimit = document.getElementById("amountLimit").value;
+        const fromDate = document.getElementById("fromDate").value;
+        const toDate = document.getElementById("toDate").value;
+
+        if (!amountLimit || !fromDate || !toDate) {
+          Swal.showValidationMessage("Please fill all fields");
+          return false;
         }
 
-        }).then((result)=>{
-            if(result.isConfirmed){
-                const addDuration =result.value;
-                fetch(`${API_URL}/duration/add`,{
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify(addDuration)
-                })
-                .then((res)=>{
-                     if (res.ok) {
-                            Swal.fire(
-                                "Added!",
-                                "Duration added successfully!",
-                                "success"
-                            ).then(() => window.location.reload());
-                        } else {
-                            Swal.fire("Error", "Failed to add duration", "error");
-                        }
-                }).catch((err) => {
-                                    console.error("Error updating expense:", err);
-                                    Swal.fire("Error", "Server error occurred", "error");
-                                });
-                
-            }
-        })
-    }
+        if (new Date(fromDate) > new Date(toDate)) {
+          Swal.showValidationMessage("From Date cannot be after To Date");
+          return false;
+        }
 
-    const result=categoryHavingBudget.map((data) => {
-  const total = totalExpense.find(t => t.categoryID === data.categoryID)?.total || 0;
+        return { amountLimit, fromDate, toDate };
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await api.post("/budgets/add", result.value);
+
+          Swal.fire("Success", "Budget added successfully", "success")
+            .then(() => window.location.reload());
+
+        } catch (err) {
+          console.log(err);
+          Swal.fire("Error", "Failed to add budget", "error");
+        }
+      }
+    });
+  };
 
   return (
-    <>
-    
-    <div className="col p-2 m-2" key={data.categoryID}>
-      <div
-        className="card text-center shadow-sm border-0 p-4"
-        style={{
-          borderRadius: "20px",
-          backgroundColor: "white",
-          transition: "all 0.3s ease",
-        }}
-      >
+    <div className="container-fluid">
 
-        
-
-        <div
-          className="icon-wrapper mx-auto mb-3 d-flex justify-content-center align-items-center "
-          style={{
-            backgroundColor: "white",
-            border: `1px solid ${data.color}`,
-            borderRadius: "50%",
-            width: "60px",
-            height: "60px",
-            fontSize: "24px",
-          }}
-        >
-          <i className={data.icon} style={{ color: `${data.color}` }}></i>
+      {/* HEADER */}
+      <div className="row mt-3">
+        <div className="col-8">
+          <h2 className="fw-bolder" style={{ color: "#0A382B" }}>
+            Budget Management
+          </h2>
+          <p style={{ color: "#6c757d" }}>
+            Track your spending against category budgets
+          </p>
         </div>
 
-        <h6 className="fw-semibold" style={{ color: "#0A382B" }}>
-          {data.category}
-        </h6>
-
-        <div className="d-flex justify-content-center gap-2 mt-2"  >
-            <div  style={{color:total>data.amountLimit ? "red" :"#0A382B",
-                        fontWeight:total>data.amountLimit ? "bold":"500px"
-            }}> {total}</div>
-          <div style={{color:"#0A382B"}}>/ {data.amountLimit}</div>
+        <div className="col d-flex justify-content-end align-items-center">
+          <button
+            className="btn"
+            style={{ backgroundColor: "#0A382B", color: "white" }}
+            onClick={handleAddBudget}
+          >
+            Add Budget
+          </button>
         </div>
       </div>
-    </div>
-    </>
-  );
-})
 
+      {/* BUDGET CARDS */}
+      <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4 mt-1">
 
+        {budgets.map((data) => {
 
-    return(
-        <>
-        <div className="container-fluid">
-        <div className="row mt-3">
-                <div className="col-8">
-                  <h2 className="fw-bolder" style={{ color: "#0A382B" }}>
-                    Add Budget
-                  </h2>
-                  <p style={{ color: "#6c757d" }}>
-                    Choose how you want to add your expense details.
-                  </p>
-        
-                </div>
-                <div className="col">
-                  
-                </div>
-        </div>
-       
-         
-        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4 mt-1 ">
-            {result}
-      </div>
-         <div className="p-2 mt-5 border" style={{backgroundColor:"white",borderRadius:"20px"}}>
+          const total =
+            totalExpense.find(t => t.categoryID === data.categoryID)?.total || 0;
 
-            <div className="container-fluid p-2 m-2">
-                
-                <div className="row">
-                    <div className="col-3">
-                        <select className="form-select" 
-                        onChange={(e)=>{
-                            if(e.target.value=="add"){
-                                handleAddDuration();
-                                 e.target.selectedIndex = 0;
-                            }
-                        }}>
-                            <option value="" selected>-- Select duration -- </option>
-                            {duration.map((data)=>(
-                                <option key={data.durationID} value={data.durationID}>{new Date(data.fromDate).toLocaleDateString()}-{new Date(data.toDate).toLocaleDateString()}</option>
-                            ))}
-                            <option value="add"> Add new duration</option>
-                        </select>
-                    </div>
-                    <div className="col-1">
-                        <button >Go</button>
-                    </div>
-                     <div className="col-1">
-                        <button onClick={handleAddDuration}>Add</button>
-                    </div>
+          const isOver = total > data.amountLimit;
+
+          return (
+            <div className="col p-2 m-2" key={data.budgetid}>
+
+              <div
+                className="card text-center shadow-sm border-0 p-4"
+                style={{
+                  borderRadius: "20px",
+                  backgroundColor: "white"
+                }}
+              >
+
+                {/* ICON */}
+                <div
+                  className="mx-auto mb-3 d-flex justify-content-center align-items-center"
+                  style={{
+                    backgroundColor: "white",
+                    borderRadius: "50%",
+                    width: "60px",
+                    height: "60px",
+                    fontSize: "24px",
+                    border: "1px solid #0A382B"
+                  }}
+                >
+                  <i className="bi bi-wallet2" style={{ color: "#0A382B" }}></i>
                 </div>
 
+                {/* CATEGORY ID (you can replace with category name if joined) */}
+                <h6 className="fw-semibold" style={{ color: "#0A382B" }}>
+                  Category {data.categoryID}
+                </h6>
+
+                {/* AMOUNT */}
+                <div className="d-flex justify-content-center gap-2 mt-2">
+                  <div
+                    style={{
+                      color: isOver ? "red" : "#0A382B",
+                      fontWeight: "bold"
+                    }}
+                  >
+                    ₹{total}
+                  </div>
+
+                  <div style={{ color: "#0A382B" }}>
+                    / ₹{data.amountLimit}
+                  </div>
+                </div>
+
+                {/* DATE RANGE */}
+                <small style={{ opacity: 0.6 }}>
+                  {new Date(data.fromdate).toLocaleDateString()} -{" "}
+                  {new Date(data.todate).toLocaleDateString()}
+                </small>
+
+              </div>
             </div>
-            <SetBudget/>
-        </div>
-         </div>
-        </>
-    )
+          );
+        })}
+
+      </div>
+
+    </div>
+  );
 }
+
 export default Budget;

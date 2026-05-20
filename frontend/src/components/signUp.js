@@ -12,6 +12,7 @@ function SignupPage() {
     password: "",
     userImage: null,
   });
+  console.log(formData);
 
   useEffect(() => {
     api.get("/users")
@@ -57,8 +58,10 @@ function SignupPage() {
       return;
 
     }
-
+    console.log("hello")
     try {
+    console.log("hello2")
+
       await api.post("/signup", {
         userName: formData.userName,
         email: formData.email,

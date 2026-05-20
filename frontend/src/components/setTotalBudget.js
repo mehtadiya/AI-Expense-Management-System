@@ -29,7 +29,7 @@ function SetTotalBudget() {
             .then(res => setDuration(res.data))
             .catch(error => console.log(error))
     }, [])
-    console.log(duration)
+    // console.log(duration)
 
     const handleAddBudget = async (e) => {
         e.preventDefault();

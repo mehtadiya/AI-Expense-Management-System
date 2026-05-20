@@ -8,6 +8,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 function Profile() {
     const [userData, setUserData] = useState([]);
     const navigate = useNavigate();
+
     useEffect(() => {
         api.get(`/usersByID`)
             .then(res => setUserData(res.data))
@@ -18,7 +19,7 @@ function Profile() {
         Swal.fire({
             title: "Edit Details",
             html: `
-                <div class="container-fluid">
+                <div class="container-fluid ">
                 <div class="row mb-2">
                     <div class="col-4"><label><b>userName:</b></label></div>
                     <div class="col">
@@ -107,10 +108,7 @@ function Profile() {
                 if (!password || !newPassword || !confirmPassword) {
                     Swal.showValidationMessage("Please fill out all fields");
                     return false;
-                } if (password != data.password) {
-                    Swal.showValidationMessage("old password is incorrect");
-                    return false;
-                }
+                } 
 
                 if (newPassword != confirmPassword) {
                     Swal.showValidationMessage("Your new password and confirm password doesn't match");
@@ -172,14 +170,25 @@ function Profile() {
                                 <div class=" mb-3 " style={{ maxWidth: "540px;", height: "200px", backgroundColor: "white", borderRadius: "20px" }}>
                                     <div class="row g-0 " style={{ borderRadius: "20px" }}>
                                         <div class="col-md-5  d-flex align-items-center justify-content-center  " style={{ height: "200px" }}>
-                                            {data.userImage && (
+                                            {data.userImage ? (
                                                 <img
                                                     src={data.userImage}
-                                                    alt="preview"
-                                                    style={{ width: "70%",height:"90%", marginTop: "10px", borderRadius: "50%" }}
+                                                    alt="user"
+                                                    style={{
+                                                        width: "70%",
+                                                        height: "90%",
+                                                        marginTop: "10px",
+                                                        borderRadius: "50%",
+                                                        objectFit: "cover"
+                                                    }}
                                                 />
-                                            )} 
-                                             </div>
+                                            ) : (
+                                                <i
+                                                    className="bi bi-person-circle"
+                                                    style={{ fontSize: "80px", color: "#0A382B" }}
+                                                ></i>
+                                            )}
+                                        </div>
                                         <div class="col-md-7 mt-4" >
                                             <div className="card-body" style={{ lineHeight: "5", color: "#0A382B" }}>
                                                 <h5 className="card-title mb-4">User Name: {data.userName}</h5>

@@ -92,7 +92,7 @@ useEffect( () => {
     });
   };
 
-  // Delete category handler
+  // Delete category 
   const handleDelete = (data) => {
     Swal.fire({
       title: "Are you sure?",
@@ -215,7 +215,8 @@ useEffect( () => {
       </div>
 
       <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4 mt-3">
-        {categories.map((data) => (
+        {categories.length> 0 ? (
+          categories.map((data) => (
           <div className="col" key={data.categoryID}>
             <div
               className="card text-center shadow-sm border-0 p-4"
@@ -259,7 +260,9 @@ useEffect( () => {
               </div>
             </div>
           </div>
-        ))}
+        ))
+        ): (<p> No categories found </p>) }
+       
       </div>
     </div>
   );

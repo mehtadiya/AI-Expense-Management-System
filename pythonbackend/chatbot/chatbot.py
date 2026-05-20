@@ -1,6 +1,4 @@
 
-
-
 import pickle
 
 # load trained model

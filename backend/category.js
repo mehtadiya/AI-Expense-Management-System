@@ -31,6 +31,7 @@ router.get('/categories', verifyToken, async (req, res) => {
     }
 });
 
+
 // GET CATEGORY + BUDGET
 router.get('/categoriesBudgets', verifyToken, async (req, res) => {
     try {
@@ -38,19 +39,46 @@ router.get('/categoriesBudgets', verifyToken, async (req, res) => {
 
         const result = await pool.query(`
             SELECT
-              c.categoryid AS "categoryID",
-              c.category,
-              c.userid AS "userID",
-              c.iconid AS "iconID",
-              i.icon,
-              i.color,
-              b.amountlimit AS "amountLimit",
-              b.fromdate AS "fromDate",
-              b.todate AS "toDate"
+                c.categoryid AS "categoryID",
+                c.category,
+                c.userid AS "userID",
+                c.iconid AS "iconID",
+                i.icon,
+                i.color,
+
+                b.amountlimit AS "amountLimit",
+                b.fromdate AS "fromDate",
+                b.todate AS "toDate"
+
             FROM category c
-            JOIN icon i ON c.iconid = i.iconid
-            JOIN budget b ON c.categoryid = b.categoryid
+
+            JOIN icon i
+                ON c.iconid = i.iconid
+
+            LEFT JOIN budget b
+                ON c.categoryid = b.categoryid
+
             WHERE c.userid = $1
+
+            UNION
+
+            SELECT
+                NULL AS "categoryID",
+                'Total Budget' AS category,
+                NULL AS "userID",
+                NULL AS "iconID",
+                NULL AS icon,
+                NULL AS color,
+
+                b.amountlimit AS "amountLimit",
+                b.fromdate AS "fromDate",
+                b.todate AS "toDate"
+
+            FROM budget b
+
+            WHERE b.userid = $1
+              AND b.categoryid IS NULL
+
         `, [userID]);
 
         res.json(result.rows);
@@ -60,6 +88,8 @@ router.get('/categoriesBudgets', verifyToken, async (req, res) => {
         res.status(500).send("error in fetching category and budget details");
     }
 });
+
+
 
 // DELETE CATEGORY (WITH EXPENSE)
 router.delete("/categories/:categoryID", verifyToken, async (req, res) => {

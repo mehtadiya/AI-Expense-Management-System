@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 
 function Multiple() {
   const location = useLocation();
-const voiceData = location.state?.voiceData || [];
+  const voiceData = location.state?.voiceData || [];
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
 
@@ -44,7 +44,6 @@ const voiceData = location.state?.voiceData || [];
     .catch((err) => console.error("Error fetching categories:", err));
 }, []);
 
-  // Handle input change per row
   const handleChange = (e, index) => {
     const { name, value } = e.target;
     const updatedForms = [...forms];

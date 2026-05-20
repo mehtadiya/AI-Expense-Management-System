@@ -5,20 +5,18 @@ const users=require('./users.js');
 const category=require('./category.js');
 const expense=require('./expense.js');
 const icon=require('./icon.js');
-const duration=require('./duration.js');
 const budget=require('./budget.js');
 const signup=require('./signup.js');
 
-const app=express();
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const app=express();//create server
+app.use(cors());//enable cors so React frontend can access backend APIs.
+app.use(express.json());//Converts incoming JSON request body into JavaScript object.
+app.use(express.urlencoded({ extended: true }));//Used to handle form data sent from HTML forms.
 
 app.use('/',users)
 app.use('/',category)
 app.use('/',expense)
 app.use('/',icon)
-app.use('/',duration)
 app.use('/',budget)
 app.use('/',signup)
 

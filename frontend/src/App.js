@@ -1,10 +1,10 @@
-import logo from './logo.svg';
+
 import './App.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import Main from './components/main';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Dashboard from './components/dashboard';
 import Expense from './components/expense';
 import AddExpense from './components/addExpense';
@@ -22,6 +22,9 @@ import Chatbot from './components/chatbot';
 import Manual from './components/addManual';
 import Multiple from './components/addMultiple';
 import { AuthProvider } from './context/AuthProvider';
+import Reports from './components/repots';
+import Alerts from './components/alerts';
+import About from './components/about';
 
 
 
@@ -31,12 +34,10 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
       <Routes>
-        <Route  path="/" element={<PublicRoute> <LoginLayout/></PublicRoute> }>
+        <Route  path="/" element={<PublicRoute> <LoginLayout/> </PublicRoute> }>
           <Route  path="/signup" element={<SignupPage/>}/>
           <Route  path="/login" element={ <LoginPage/>}/> 
-           
-             <Route index  element={ <LoginPage/>}/>
-
+          <Route index  element={ <LoginPage/>}/>
         </Route>
         <Route path="/main" element={<ProtectedRoute> <Main/> </ProtectedRoute>}>
             
@@ -49,7 +50,9 @@ function App() {
             <Route path="/main/budget" element={<Extra/>}/>
             <Route path="/main/manual" element={<Manual/>}/>
             <Route path="/main/multiple" element={<Multiple/>}/>
-            {/* <Route path="/main/budget/1" element={<Budget/>}/> */}
+            <Route path="/main/reports" element={<Reports/>}/>
+            <Route path="/main/alerts" element={<Alerts/>}/>
+            <Route path="/main/about" element={<About/>}/>
 
         </Route>
 

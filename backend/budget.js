@@ -192,12 +192,18 @@ router.post("/budgets/addCategoryWise", verifyToken, async (req, res) => {
         }
 
         if (totalBudget !== null && currentSum !== totalBudget) {
+
+            const remaining = totalBudget - currentSum;
+
             await client.query("ROLLBACK");
+
             return res.status(400).json({
-                message: `Total of category budgets (${currentSum}) must equal total budget (${totalBudget})`
+                message:
+                    remaining > 0
+                        ? `₹${remaining} budget is remaining to allocate`
+                        : `Category budgets exceeded total budget by ₹${Math.abs(remaining)}`
             });
         }
-
         await client.query("COMMIT");
 
         res.status(201).json({
@@ -210,6 +216,24 @@ router.post("/budgets/addCategoryWise", verifyToken, async (req, res) => {
         res.status(500).json({ message: "Server error" });
     } finally {
         client.release();
+    }
+});
+
+
+//get duration
+router.get('/duration', verifyToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+          SELECT
+            distinct
+            fromdate AS "fromDate",
+            todate AS "toDate"
+          FROM budget
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.log("error", error);
+        res.status(500).send("cannot fetch duration");
     }
 });
 

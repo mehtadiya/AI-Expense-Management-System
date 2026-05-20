@@ -30,24 +30,29 @@ function Dashboard() {
         return colorMap[icon] || "#198754"; // default: green
     };
 
-
+    //see category.js
     useEffect(() => {
         api.get("/categories")
             .then(res => setCategories(res.data))
             .catch((err) => console.error("Error fetching categories:", err));
     }, []);
 
+    //see category.js
     useEffect(() => {
         api.get("/categoriesBudgets")
             .then(res => setCategoriesBudget(res.data))
             .catch((err) => console.error("Error fetching categories:", err));
     }, []);
 
+    //see expense.js
     useEffect(() => {
         api.get("/expenseData")
             .then(res => setExpenseData(res.data))
     }, [])
 
+
+
+    //see expense.js
     useEffect(() => {
         api.get("/recentExpenses")
             .then(res => setExpense(res.data))
@@ -65,6 +70,7 @@ function Dashboard() {
         );
     });
 
+    //category wise final expense
     const expenseMap = filteredExpenseData.reduce((acc, curr) => {
         acc[curr.categoryID] =
             (acc[curr.categoryID] || 0) + Number(curr.expenseAmount);
@@ -94,7 +100,13 @@ function Dashboard() {
         return sum + Number(val.expenseAmount);
     }, 0);
 
-    const totalBudget = newCategoryData.reduce(
+    const monthlyBudget = newCategoryData.find(
+    (b) => b.categoryID === null
+    );
+
+    const totalBudget = monthlyBudget
+    ? Number(monthlyBudget.amountLimit)
+    : newCategoryData.reduce(
         (sum, b) => sum + Number(b.amountLimit || 0),
         0
     );
@@ -152,7 +164,7 @@ function Dashboard() {
             <div className="row g-4 mb-4">
                 {/* BUDGET OVERVIEW CARD */}
                 <div className="col-lg-9 budget-card" style={{
-                    height: "320px"
+                    height: "370px"
                 }} >
                     <div
                         className="card shadow-sm ps-4 pt-4 pb-4 pe-2 border-0"
@@ -224,7 +236,7 @@ function Dashboard() {
 
                 {/* CALENDER */}
                 <div className="col-lg " style={{
-                    height: "320px"
+                    height: "370px"
                 }}>
                     <Calendar
                         initialDate={selectedDate}

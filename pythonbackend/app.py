@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Header
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel 
 from chatbot.chatbot import detect_intent
 import whisper
 import tempfile, os
@@ -8,6 +8,10 @@ from dotenv import load_dotenv
 import requests
 import re
 import datetime
+import tempfile, os, subprocess
+from chatbot.chatbot import detect_intent
+from chatbot.intent_parser import execute_intent
+
 
 app = FastAPI()
 
@@ -23,9 +27,8 @@ model = whisper.load_model("base.en")
 print("Whisper loaded!")
 load_dotenv()
 
-NODE_API = os.getenv("DB_URL")
+NODE_API = os.getenv("NODE_API")
 
-# ----------- DATE EXTRACTOR -----------
 def extract_date(text: str):
     text = text.lower()
     today = datetime.datetime.now()
@@ -134,7 +137,7 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
 
         intent = detect_intent(text)
 
-        #  FIXED PRIORITY RULES
+        
         if "category" in text or "categories" in text:
             intent = "COUNT_CATEGORIES"
 
@@ -147,11 +150,9 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
         elif "show" in text or "list" in text or "give" in text:
             intent = "GET_EXPENSES"
 
-        # -------- CATEGORY COUNT --------
         if intent == "COUNT_CATEGORIES":
             return {"reply": f" You have {len(categories)} categories"}
 
-        # -------- FETCH EXPENSES --------
         expenses = []
         if intent in ["GET_EXPENSES", "COUNT_EXPENSES", "TOTAL_EXPENSE"]:
             expenses = requests.get(
@@ -159,7 +160,6 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
                 headers={"Authorization": f"Bearer {token}"}
             ).json()
 
-        # -------- SHOW --------
         if intent == "GET_EXPENSES":
             if not expenses:
                 return {"reply": "No expenses found"}
@@ -170,11 +170,9 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
 
             return {"reply": msg}
 
-        # -------- COUNT --------
         if intent == "COUNT_EXPENSES":
             return {"reply": f" You have {len(expenses)} expenses"}
 
-        # -------- TOTAL --------
         if intent == "TOTAL_EXPENSE":
             total = sum(float(e.get("expenseAmount", 0)) for e in expenses)
 
@@ -189,7 +187,6 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
 
             return {"reply": f" Total spending is ₹{total}"}
 
-        # -------- ADD --------
         if intent == "ADD_EXPENSE":
             parsed = parse_expense_command(text, categories)
 
@@ -222,3 +219,51 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
         print("ERROR:", e)
         return {"reply": " Server error"}
 
+# ----------- VOICE API -----------
+@app.post("/voice")
+async def voice_input(file: UploadFile = File(...), authorization: str = Header(None)):
+    try:
+        import time
+        start_time = time.time()
+        print("VOICE: Received file", file.filename)
+
+        # Save temp file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
+            contents = await file.read()
+            tmp.write(contents)
+            tmp_path = tmp.name
+
+        # Convert to WAV
+        wav_path = tmp_path + ".wav"
+        subprocess.run(["ffmpeg", "-y", "-i", tmp_path, wav_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        # Transcribe
+        result = model.transcribe(wav_path)
+        text = result["text"].strip()
+        print("VOICE: Transcription done ->", text)
+
+        # Detect intent
+        intent = detect_intent(text)
+        token = authorization.split(" ")[1] if authorization and " " in authorization else None
+        data = None
+
+        if token:
+            try:
+                data = execute_intent(intent, text, token)
+            except Exception as e:
+                print("VOICE ERROR: Node API call failed:", e)
+                data = {"error": "Failed to process via Node API."}
+
+        # Remove temp files
+        os.remove(tmp_path)
+        os.remove(wav_path)
+
+        # If error from execute_intent, mark intent as ERROR
+        if data and "error" in data:
+            intent = "ERROR"
+
+        return {"transcript": text, "intent": intent, "data": data}
+
+    except Exception as e:
+        print("VOICE ERROR:", e)
+        return {"transcript": "", "intent": "ERROR", "data": {"error": "Server error"}}

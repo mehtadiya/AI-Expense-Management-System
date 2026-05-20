@@ -3,13 +3,12 @@ import { Link, useParams } from "react-router-dom";
 import ExpensesCard from "./expenses_card";
 import Swal from "sweetalert2";
 import api from "../api/api";
-const API_URL = process.env.REACT_APP_API_URL;
 
 function Expense() {
     const [expenses, setExpense] = useState([]);
     const [category, setCategory] = useState([]);
 
-
+    //see category.js
     useEffect(() => {
         api.get("/categories")
             .then(res => setCategory(res.data))
@@ -19,7 +18,7 @@ function Expense() {
 
     const fetchExpenses = (category = "") => {
         const url = category
-            ? `/expenses?category=${encodeURIComponent(category)}`
+            ? `/expenses?category=${encodeURIComponent(category)}`//encodeURIComponent will convert special characters into URL-safe format. "Food & drinks"
             : `/expenses`;
 
         api.get(url)
@@ -51,7 +50,7 @@ function Expense() {
         };
         return colorMap[icon] || "#198754"; // default: green
     };
-    
+
     return (
         <>
             <div className="container-fluid py-3">
@@ -112,9 +111,10 @@ function Expense() {
                                 ) : (expenses.map((data) => (
                                     <tr>
                                         <td>
-                                            <i className={`${data.icon} fs-5 me-2`}
-                                                style={{ color: `${getColor(data.icon)}` }}
+                                            <i className={`${data.icon?.trim()} fs-5 me-2`}
+                                                style={{ color: `${getColor(data.icon?.trim())}` }}
                                             ></i>{data.category}
+
                                         </td>
                                         <td style={{ color: "#0A382B" }}>{data.note}</td>
                                         <td className="fw-semibold text-danger">Rs.{data.expenseAmount}</td>
@@ -124,19 +124,15 @@ function Expense() {
                                                 className="btn btn-sm btn-outline-warning me-2"
                                                 title="Edit"
                                                 onClick={() => {
-                                                    const categoryOptions = category
-                                                        .map(
+                                                    const categoryOptions = category.map(
                                                             (cat) => `
-                                                                <option value="${cat.categoryID}" ${cat.categoryID === data.categoryID ? "selected" : ""
-                                                                }>
+                                                                <option value="${cat.categoryID}" ${cat.categoryID === data.categoryID ? "selected" : ""}>
                                                                 ${cat.category}
                                                                 </option>`
                                                         )
                                                         .join("");
-                                                    
-                                                    console.log("Expense CategoryID:", data.categoryID);
-                                                    console.log("Categories:", category);
 
+           
                                                     Swal.fire({
                                                         title: "Edit Expense",
                                                         html: `
@@ -247,7 +243,6 @@ function Expense() {
                                                                         icon: "success",
 
                                                                     });
-                                                                    // .then(() => window.location.reload());
                                                                     setExpense(prev =>
                                                                         prev.filter(e => e.expenseID !== data.expenseID)
                                                                     );

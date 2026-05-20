@@ -5,11 +5,11 @@ function Chatbot() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const bottomRef = useRef(null); // ✅ NEW
+  const bottomRef = useRef(null); 
 
   const token = localStorage.getItem("token");
 
-  // ✅ AUTO SCROLL
+  //  AUTO SCROLL
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
@@ -71,7 +71,6 @@ function Chatbot() {
 
         {loading && <div style={styles.typing}>Bot is typing...</div>}
 
-        {/* ✅ IMPORTANT FOR AUTO SCROLL */}
         <div ref={bottomRef}></div>
       </div>
 
@@ -94,12 +93,11 @@ function Chatbot() {
 export default Chatbot;
 
 
-// -------- FORMAT RESPONSE --------
 function formatResponse(data) {
   let text = data.reply || "";
 
   if (Array.isArray(data.expenses)) {
-    text += "\n\n📊 Summary:";
+    text += "\n\n Summary:";
     text += `\nTotal: ₹${data.expenses.reduce(
       (s, e) => s + Number(e.expenseAmount || 0),
       0
@@ -110,7 +108,6 @@ function formatResponse(data) {
 }
 
 
-// -------- STYLES --------
 const styles = {
   container: {
     height: "80vh",

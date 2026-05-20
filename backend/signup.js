@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require('express');
 const { pool } = require('./index.js');
-
+const bcrypt = require("bcrypt");
 const router = express.Router();
 
 router.post("/signup", async (req, res) => {
@@ -11,12 +11,14 @@ router.post("/signup", async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
+        const hashedPassword=await bcrypt.hash(password,10);
+
         const query = `
             INSERT INTO users (username, email, password)
             VALUES ($1, $2, $3)
         `;
 
-        const values = [userName, email, password];
+        const values = [userName, email, hashedPassword];
 
         await pool.query(query, values);
 

@@ -35,9 +35,9 @@ const userID=user ?.userID;
         case "Scan":
             return <Scan userID={userID}/>
         case "Audio":
-            return <RecordAudio userID={userID}/>
+            return <RecordAudio />
         default:
-            return <Manual userID={userID}/>
+            return <Manual />
     }
   }
 
@@ -54,9 +54,7 @@ const userID=user ?.userID;
           </p>
 
         </div>
-        <div className="col">
-          <Link to={`/main/setbudget/${userID}`}>Set Budget</Link>
-        </div>
+        
       </div>
 
         {/* Boxes*/}

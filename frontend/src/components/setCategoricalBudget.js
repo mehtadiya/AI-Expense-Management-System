@@ -74,17 +74,17 @@ function SetCategoricalBudget() {
             const categoryTotal = Object.values(form.categoryAmount)
                 .reduce((sum, val) => sum + Number(val), 0);
 
-            if (totalBudget) {
-                if (categoryTotal !== Number(totalBudget.amountLimit)) {
-                    await Swal.fire({
-                        icon: "error",
-                        title: "Budget Mismatch",
-                        text: `Category total (${categoryTotal}) must exactly match total budget (${totalBudget.amountLimit})`,
-                        confirmButtonText: "OK",
-                    });
-                    return;
-                }
-            }
+           if (totalBudget) {
+    if (categoryTotal !== Number(totalBudget.amountLimit)) {
+        await Swal.fire({
+            icon: "error",
+            title: "Budget Mismatch",
+            text: `Category total (${categoryTotal}) must exactly match total budget (${totalBudget.amountLimit})`,
+            confirmButtonText: "OK",
+        });
+        return;
+    }
+}
 
 
 

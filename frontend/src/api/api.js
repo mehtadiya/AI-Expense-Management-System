@@ -1,38 +1,18 @@
-// import axios from "axios";
-
-// const api=axios.create({
-//     baseURL:"http://localhost:3002"
-// })
-
-// api.interceptors.request.use((req)=>{
-//     const token= localStorage.getItem("token")
-    
-//     if(token){
-//         req.headers.Authorization=`Bearer ${token}`
-//     }
-
-//     return req
-// })
-
-
-
-
-
-
-
 import axios from "axios";
+const API_URL = process.env.REACT_APP_API_URL;
 
  const api = axios.create({
-  baseURL:"https://expense-management-2-ez4q.onrender.com", 
+  baseURL:`${API_URL}`, 
     headers:{
         "Content-Type":"application/json"
     }
 });
 
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-    console.log(token)
+    // console.log(token)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -41,15 +21,17 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+
 api.interceptors.response.use(
+  
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      
+    if (error.response && error.response.status === 403) {
+      console.log("token Expired")
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      window.location.href = "/login";
+      window.location.replace("/login");
     }
 
     return Promise.reject(error);
