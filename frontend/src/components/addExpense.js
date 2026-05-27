@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
-// import { Card } from "react-bootstrap";
+import React, {  useState } from "react";
+
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Manual from "./addManual";
 import Multiple from "./addMultiple";
 import Online from "./addOnline";
 import Scan from "./addScan";
 import RecordAudio from "./addAudio";
-import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
 
 
@@ -14,7 +13,7 @@ function AddExpense() {
     const [selectedOption,setSelectedOption]=useState(null);
   
 const user=useAuth();
-const userID=user ?.userID;
+const userID=user?.userID;
 
   const options = [
     { title: "Manual", icon: "bi bi-pencil-square", color: "#198754" ,option:"Manual" },

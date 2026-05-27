@@ -28,7 +28,7 @@ function Extra() {
                
             case "Category":
                 return <SetCategoricalBudget />
-                // return "hello2"
+                
             default:
             return <SetTotalBudget userID={userID}/>
             

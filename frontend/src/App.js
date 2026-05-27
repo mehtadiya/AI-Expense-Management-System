@@ -13,8 +13,7 @@ import SignupPage from './components/signUp';
 import LoginLayout from './components/loginLayout';
 import Profile from './components/profile';
 import CategoryPage from './components/category';
-import SetBudget from './components/setCategoricalBudget';
-import Budget from './components/budget';
+
 import Extra from './components/extra';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
