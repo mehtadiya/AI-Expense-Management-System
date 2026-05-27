@@ -207,91 +207,95 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
     except Exception as e:
         return {"reply": str(e)}
 
+# @app.post("/voice")
+# async def voice_input(file: UploadFile = File(...), authorization: str = Header(None)):
+#     tmp_path = None
+#     wav_path = None
+
+#     try:
+#         suffix = ".webm"
+
+#         if file.filename:
+#             ext = os.path.splitext(file.filename)[1]
+#             if ext:
+#                 suffix = ext
+
+#         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+#             contents = await file.read()
+#             tmp.write(contents)
+#             tmp_path = tmp.name
+
+#         wav_path = tmp_path + ".wav"
+
+#         ffmpeg_result = subprocess.run(
+#             ["ffmpeg", "-y", "-i", tmp_path, "-ar", "16000", "-ac", "1", wav_path],
+#             capture_output=True,
+#             text=True
+#         )
+
+#         if ffmpeg_result.returncode != 0:
+#             return {
+#                 "transcript": "",
+#                 "intent": "ERROR",
+#                 "data": {"error": ffmpeg_result.stderr}
+#             }
+
+#         model = get_model()
+#         segments, info = model.transcribe(wav_path, language="en")
+
+#         text = " ".join([segment.text for segment in segments]).strip()
+
+#         if not text:
+#             return {
+#                 "transcript": "",
+#                 "intent": "ERROR",
+#                 "data": {"error": "No speech detected"}
+#             }
+
+#         intent = detect_intent(text)
+
+#         token = None
+
+#         if authorization and " " in authorization:
+#             token = authorization.split(" ")[1]
+
+#         data = None
+
+#         if token:
+#             try:
+#                 data = execute_intent(intent, text, token)
+#             except Exception as e:
+#                 data = {"error": str(e)}
+
+#         if data and "error" in data:
+#             intent = "ERROR"
+
+#         return {
+#             "transcript": text,
+#             "intent": intent,
+#             "data": data
+#         }
+
+#     except Exception as e:
+#         return {
+#             "transcript": "",
+#             "intent": "ERROR",
+#             "data": {"error": str(e)}
+#         }
+
+#     finally:
+#         try:
+#             if tmp_path and os.path.exists(tmp_path):
+#                 os.remove(tmp_path)
+#         except:
+#             pass
+
+#         try:
+#             if wav_path and os.path.exists(wav_path):
+#                 os.remove(wav_path)
+#         except:
+#             pass
+
 @app.post("/voice")
 async def voice_input(file: UploadFile = File(...), authorization: str = Header(None)):
-    tmp_path = None
-    wav_path = None
-
-    try:
-        suffix = ".webm"
-
-        if file.filename:
-            ext = os.path.splitext(file.filename)[1]
-            if ext:
-                suffix = ext
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            contents = await file.read()
-            tmp.write(contents)
-            tmp_path = tmp.name
-
-        wav_path = tmp_path + ".wav"
-
-        ffmpeg_result = subprocess.run(
-            ["ffmpeg", "-y", "-i", tmp_path, "-ar", "16000", "-ac", "1", wav_path],
-            capture_output=True,
-            text=True
-        )
-
-        if ffmpeg_result.returncode != 0:
-            return {
-                "transcript": "",
-                "intent": "ERROR",
-                "data": {"error": ffmpeg_result.stderr}
-            }
-
-        model = get_model()
-        segments, info = model.transcribe(wav_path, language="en")
-
-        text = " ".join([segment.text for segment in segments]).strip()
-
-        if not text:
-            return {
-                "transcript": "",
-                "intent": "ERROR",
-                "data": {"error": "No speech detected"}
-            }
-
-        intent = detect_intent(text)
-
-        token = None
-
-        if authorization and " " in authorization:
-            token = authorization.split(" ")[1]
-
-        data = None
-
-        if token:
-            try:
-                data = execute_intent(intent, text, token)
-            except Exception as e:
-                data = {"error": str(e)}
-
-        if data and "error" in data:
-            intent = "ERROR"
-
-        return {
-            "transcript": text,
-            "intent": intent,
-            "data": data
-        }
-
-    except Exception as e:
-        return {
-            "transcript": "",
-            "intent": "ERROR",
-            "data": {"error": str(e)}
-        }
-
-    finally:
-        try:
-            if tmp_path and os.path.exists(tmp_path):
-                os.remove(tmp_path)
-        except:
-            pass
-
-        try:
-            if wav_path and os.path.exists(wav_path):
-                os.remove(wav_path)
-        except:
-            pass
+    return {"ok": True}
