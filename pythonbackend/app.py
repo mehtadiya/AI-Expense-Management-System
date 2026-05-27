@@ -22,18 +22,16 @@ app.add_middleware(
 )
 
 model = None
-NODE_API = None
 
 load_dotenv()
-NODE_API = os.getenv("NODE_API")
 
+NODE_API = os.getenv("NODE_API")
 
 def get_model():
     global model
     if model is None:
         model = WhisperModel("tiny", device="cpu", compute_type="int8")
     return model
-
 
 def extract_date(text: str):
     text = text.lower()
@@ -59,6 +57,8 @@ def extract_date(text: str):
 
     return today.strftime("%Y-%m-%d")
 
+class ChatRequest(BaseModel):
+    message: str
 
 def get_user_categories(token: str):
     try:
@@ -69,14 +69,6 @@ def get_user_categories(token: str):
         return res.json()
     except:
         return []
-
-
-def safe_json(res):
-    try:
-        return res.json()
-    except:
-        return []
-
 
 def parse_expense_command(cmd: str, user_categories: list):
     cmd_lower = cmd.lower()
@@ -104,6 +96,22 @@ def parse_expense_command(cmd: str, user_categories: list):
                 matched_category = cat
                 break
 
+    if not matched_category:
+        keyword_map = {
+            "food": ["food", "dining", "restaurant", "lunch", "dinner"],
+            "transport": ["travel", "uber", "bus"],
+            "shopping": ["shopping", "mall", "clothes"]
+        }
+
+        for cat in user_categories:
+            name = cat["category"].lower()
+            for key, words in keyword_map.items():
+                if key in name and any(w in cmd_clean for w in words):
+                    matched_category = cat
+                    break
+            if matched_category:
+                break
+
     return {
         "amount": amount,
         "note": note,
@@ -111,6 +119,93 @@ def parse_expense_command(cmd: str, user_categories: list):
         "category": matched_category["category"] if matched_category else "other"
     }
 
+@app.post("/chat")
+async def chat_command(req: ChatRequest, authorization: str = Header(None)):
+    try:
+        text = req.message.strip().lower()
+
+        token = authorization.split(" ")[1] if authorization else None
+        categories = get_user_categories(token)
+
+        intent = detect_intent(text)
+
+        if "category" in text or "categories" in text:
+            intent = "COUNT_CATEGORIES"
+
+        elif "how many" in text or "count" in text:
+            intent = "COUNT_EXPENSES"
+
+        elif "how much" in text or "total" in text or "spent" in text:
+            intent = "TOTAL_EXPENSE"
+
+        elif "show" in text or "list" in text or "give" in text:
+            intent = "GET_EXPENSES"
+
+        if intent == "COUNT_CATEGORIES":
+            return {"reply": f"You have {len(categories)} categories"}
+
+        expenses = []
+        if intent in ["GET_EXPENSES", "COUNT_EXPENSES", "TOTAL_EXPENSE"]:
+            expenses = requests.get(
+                f"{NODE_API}/expenses",
+                headers={"Authorization": f"Bearer {token}"}
+            ).json()
+
+        if intent == "GET_EXPENSES":
+            if not expenses:
+                return {"reply": "No expenses found"}
+
+            msg = "Your Expenses:\n\n"
+            for e in expenses:
+                msg += f"• ₹{e['expenseAmount']} - {e.get('note','')} ({e.get('category','')})\n"
+
+            return {"reply": msg}
+
+        if intent == "COUNT_EXPENSES":
+            return {"reply": f"You have {len(expenses)} expenses"}
+
+        if intent == "TOTAL_EXPENSE":
+            total = sum(float(e.get("expenseAmount", 0)) for e in expenses)
+
+            for cat in categories:
+                if cat["category"].lower() in text:
+                    filtered = [
+                        e for e in expenses
+                        if e.get("category", "").lower() == cat["category"].lower()
+                    ]
+                    total = sum(float(e.get("expenseAmount", 0)) for e in filtered)
+                    return {"reply": f"You spent ₹{total} on {cat['category']}"}
+
+            return {"reply": f"Total spending is ₹{total}"}
+
+        if intent == "ADD_EXPENSE":
+            parsed = parse_expense_command(text, categories)
+
+            if parsed["amount"] is None:
+                return {"reply": "Please mention amount"}
+
+            expense_date = extract_date(text)
+
+            response = requests.post(
+                f"{NODE_API}/expenses/add",
+                json={
+                    "expenseAmount": parsed["amount"],
+                    "note": parsed["note"],
+                    "categoryID": parsed["categoryID"],
+                    "expenseDate": expense_date
+                },
+                headers={"Authorization": f"Bearer {token}"}
+            )
+
+            if response.status_code in [200, 201]:
+                return {"reply": f"Added ₹{parsed['amount']} to {parsed['category']}"}
+
+            return {"reply": "Failed to save expense"}
+
+        return {"reply": "I didn’t understand"}
+
+    except Exception as e:
+        return {"reply": str(e)}
 
 @app.post("/voice")
 async def voice_input(file: UploadFile = File(...), authorization: str = Header(None)):
@@ -133,24 +228,22 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
         wav_path = tmp_path + ".wav"
 
         ffmpeg_result = subprocess.run(
-            ["ffmpeg", "-y", "-i", tmp_path, "-ac", "1", "-ar", "16000", "-vn", wav_path],
+            ["ffmpeg", "-y", "-i", tmp_path, "-ar", "16000", "-ac", "1", wav_path],
             capture_output=True,
             text=True
         )
-        print(ffmpeg_result.stdout)
-        print(ffmpeg_result.stderr)
 
         if ffmpeg_result.returncode != 0:
             return {
                 "transcript": "",
                 "intent": "ERROR",
-                "data": {"error": "Audio conversion failed"}
+                "data": {"error": ffmpeg_result.stderr}
             }
 
         model = get_model()
-        segments, _ = model.transcribe(wav_path, language="en")
+        segments, info = model.transcribe(wav_path, language="en")
 
-        text = " ".join([s.text for s in segments]).strip()
+        text = " ".join([segment.text for segment in segments]).strip()
 
         if not text:
             return {
@@ -162,6 +255,7 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
         intent = detect_intent(text)
 
         token = None
+
         if authorization and " " in authorization:
             token = authorization.split(" ")[1]
 
@@ -172,6 +266,9 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
                 data = execute_intent(intent, text, token)
             except Exception as e:
                 data = {"error": str(e)}
+
+        if data and "error" in data:
+            intent = "ERROR"
 
         return {
             "transcript": text,
