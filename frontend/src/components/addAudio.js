@@ -25,12 +25,13 @@ function RecordAudio() {
     mediaRecorderRef.current.onstop = async () => {
       setIsProcessing(true);
       const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+
       const formData = new FormData();
-      formData.append("file", audioBlob);
+      formData.append("file", audioBlob, "voice.webm");
 
 
 
-      
+
       try {
         const token = localStorage.getItem("token");
         const res = await axios.post(`${API_URL}/voice`, formData, {
@@ -42,7 +43,7 @@ function RecordAudio() {
 
         const normalizedIntent = intent?.toUpperCase();
 
-        
+
         if (normalizedIntent === "ERROR" && data?.error) {
           alert(data.error);
         }
