@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+const API_URL = process.env.REACT_APP_API_URL;
 
 function RecordAudio() {
   const [isRecording, setIsRecording] = useState(false);
@@ -32,7 +33,7 @@ function RecordAudio() {
       
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.post("http://127.0.0.1:8000/voice", formData, {
+        const res = await axios.post(`${API_URL}/voice`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -41,7 +42,7 @@ function RecordAudio() {
 
         const normalizedIntent = intent?.toUpperCase();
 
-        // Handle errors first
+        
         if (normalizedIntent === "ERROR" && data?.error) {
           alert(data.error);
         }
@@ -67,13 +68,13 @@ function RecordAudio() {
 
     mediaRecorderRef.current.start();
     setIsRecording(true);
-    setTranscript("Recording... 🎙️");
+    setTranscript("Recording... ");
   };
 
   const stopRecording = () => {
     mediaRecorderRef.current.stop();
     setIsRecording(false);
-    setTranscript("Processing voice... ⏳");
+    setTranscript("Processing voice... ");
   };
 
   return (

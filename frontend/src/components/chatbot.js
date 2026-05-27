@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+const API_URL = process.env.REACT_APP_API_URL;
+
 
 function Chatbot() {
   const [input, setInput] = useState("");
@@ -9,7 +11,7 @@ function Chatbot() {
 
   const token = localStorage.getItem("token");
 
-  //  AUTO SCROLL
+  
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
@@ -24,7 +26,7 @@ function Chatbot() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/chat", {
+      const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
