@@ -28,7 +28,7 @@ model = None
 def get_model():
     global model
     if model is None:
-        model = whisper.load_model("base.en")
+        model = whisper.load_model("tiny.en")
     return model
 
 load_dotenv()
