@@ -23,11 +23,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-model = WhisperModel("tiny.en", device="cpu", compute_type="int8")
+model = None
 
 load_dotenv()
 
 NODE_API = os.getenv("NODE_API")
+
+def get_model():
+    global model
+    if model is None:
+        model = WhisperModel("tiny", device="cpu", compute_type="int8")
+    return model
 
 def extract_date(text: str):
     text = text.lower()
@@ -226,7 +232,7 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
         wav_path = tmp_path + ".wav"
 
         ffmpeg_result = subprocess.run(
-            ["ffmpeg", "-y", "-i", tmp_path, wav_path],
+            ["ffmpeg", "-y", "-i", tmp_path, "-ar", "16000", "-ac", "1", wav_path],
             capture_output=True,
             text=True
         )
@@ -235,11 +241,10 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
             return {
                 "transcript": "",
                 "intent": "ERROR",
-                "data": {
-                    "error": f"FFmpeg failed: {ffmpeg_result.stderr}"
-                }
+                "data": {"error": ffmpeg_result.stderr}
             }
 
+        model = get_model()
         segments, info = model.transcribe(wav_path, language="en")
 
         text = " ".join([segment.text for segment in segments]).strip()
@@ -248,9 +253,7 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
             return {
                 "transcript": "",
                 "intent": "ERROR",
-                "data": {
-                    "error": "No speech detected"
-                }
+                "data": {"error": "No speech detected"}
             }
 
         intent = detect_intent(text)
@@ -281,9 +284,7 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
         return {
             "transcript": "",
             "intent": "ERROR",
-            "data": {
-                "error": str(e)
-            }
+            "data": {"error": str(e)}
         }
 
     finally:
