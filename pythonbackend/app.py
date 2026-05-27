@@ -137,6 +137,8 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
             capture_output=True,
             text=True
         )
+        print(ffmpeg_result.stdout)
+        print(ffmpeg_result.stderr)
 
         if ffmpeg_result.returncode != 0:
             return {
