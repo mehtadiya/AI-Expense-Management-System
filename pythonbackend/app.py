@@ -15,10 +15,8 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://ai-expense-management-system-beta.vercel.app"
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -144,7 +142,7 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
             intent = "GET_EXPENSES"
 
         if intent == "COUNT_CATEGORIES":
-            return {"reply": f" You have {len(categories)} categories"}
+            return {"reply": f"You have {len(categories)} categories"}
 
         expenses = []
         if intent in ["GET_EXPENSES", "COUNT_EXPENSES", "TOTAL_EXPENSE"]:
@@ -157,14 +155,14 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
             if not expenses:
                 return {"reply": "No expenses found"}
 
-            msg = " Your Expenses:\n\n"
+            msg = "Your Expenses:\n\n"
             for e in expenses:
                 msg += f"• ₹{e['expenseAmount']} - {e.get('note','')} ({e.get('category','')})\n"
 
             return {"reply": msg}
 
         if intent == "COUNT_EXPENSES":
-            return {"reply": f" You have {len(expenses)} expenses"}
+            return {"reply": f"You have {len(expenses)} expenses"}
 
         if intent == "TOTAL_EXPENSE":
             total = sum(float(e.get("expenseAmount", 0)) for e in expenses)
@@ -176,15 +174,15 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
                         if e.get("category", "").lower() == cat["category"].lower()
                     ]
                     total = sum(float(e.get("expenseAmount", 0)) for e in filtered)
-                    return {"reply": f" You spent ₹{total} on {cat['category']}"}
+                    return {"reply": f"You spent ₹{total} on {cat['category']}"}
 
-            return {"reply": f" Total spending is ₹{total}"}
+            return {"reply": f"Total spending is ₹{total}"}
 
         if intent == "ADD_EXPENSE":
             parsed = parse_expense_command(text, categories)
 
             if parsed["amount"] is None:
-                return {"reply": " Please mention amount"}
+                return {"reply": "Please mention amount"}
 
             expense_date = extract_date(text)
 
@@ -200,13 +198,11 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
             )
 
             if response.status_code in [200, 201]:
-                return {
-                    "reply": f" Added ₹{parsed['amount']} to {parsed['category']}"
-                }
+                return {"reply": f"Added ₹{parsed['amount']} to {parsed['category']}"}
 
-            return {"reply": " Failed to save expense"}
+            return {"reply": "Failed to save expense"}
 
-        return {"reply": " I didn’t understand"}
+        return {"reply": "I didn’t understand"}
 
     except Exception as e:
         return {"reply": str(e)}
