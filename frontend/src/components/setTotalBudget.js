@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../api/api";
 import { useAuth } from "../context/AuthProvider";
-const API_URL = process.env.REACT_APP_API_URL;
 
 function SetTotalBudget() {
     const today = new Date();
@@ -65,8 +63,7 @@ function SetTotalBudget() {
                 const dbFrom = new Date(data.fromDate);
                 const dbTo = new Date(data.toDate);
 
-                return data.categoryID == null && from <= dbTo && to >= dbFrom && data.userID == userID;
-            });
+return data.categoryID === null && from <= dbTo && to >= dbFrom && data.userID === userID;            });
             if (exists) {
                 await Swal.fire({
                     icon: "info",
