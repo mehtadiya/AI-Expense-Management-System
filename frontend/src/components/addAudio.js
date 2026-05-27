@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-const API_URL = process.env.PYTHON_APP_API_URL;
+const API_URL = process.env.REACT_APP_PYTHON_APP_API_URL;
 
 function RecordAudio() {
   const [isRecording, setIsRecording] = useState(false);
