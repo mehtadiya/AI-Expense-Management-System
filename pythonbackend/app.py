@@ -240,7 +240,7 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
                 }
             }
 
-        segments, info = model.transcribe(wav_path)
+        segments, info = model.transcribe(wav_path, language="en")
 
         text = " ".join([segment.text for segment in segments]).strip()
 
