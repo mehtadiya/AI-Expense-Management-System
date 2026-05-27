@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from chatbot.chatbot import detect_intent
 from chatbot.intent_parser import execute_intent
-import whisper
+from faster_whisper import WhisperModel
 import tempfile, os
 from dotenv import load_dotenv
 import requests
@@ -23,13 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-model = None
-
-def get_model():
-    global model
-    if model is None:
-        model = whisper.load_model("tiny.en")
-    return model
+model = WhisperModel("tiny.en", device="cpu", compute_type="int8")
 
 load_dotenv()
 
@@ -208,8 +202,8 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
 
         return {"reply": " I didn’t understand"}
 
-    except:
-        return {"reply": " Server error"}
+    except Exception as e:
+        return {"reply": str(e)}
 
 @app.post("/voice")
 async def voice_input(file: UploadFile = File(...), authorization: str = Header(None)):
@@ -246,11 +240,9 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
                 }
             }
 
-        model = get_model()
+        segments, info = model.transcribe(wav_path)
 
-        result = model.transcribe(wav_path)
-
-        text = result.get("text", "").strip()
+        text = " ".join([segment.text for segment in segments]).strip()
 
         if not text:
             return {
