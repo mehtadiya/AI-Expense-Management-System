@@ -28,7 +28,7 @@ model = None
 def get_model():
     global model
     if model is None:
-        model = whisper.load_model("base.en")
+        model = whisper.load_model("tiny.en")
     return model
 
 load_dotenv()
@@ -213,38 +213,96 @@ async def chat_command(req: ChatRequest, authorization: str = Header(None)):
 
 @app.post("/voice")
 async def voice_input(file: UploadFile = File(...), authorization: str = Header(None)):
-    try:
-        import time
-        start_time = time.time()
+    tmp_path = None
+    wav_path = None
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
+    try:
+        suffix = ".webm"
+
+        if file.filename:
+            ext = os.path.splitext(file.filename)[1]
+            if ext:
+                suffix = ext
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             contents = await file.read()
             tmp.write(contents)
             tmp_path = tmp.name
 
         wav_path = tmp_path + ".wav"
-        subprocess.run(["ffmpeg", "-y", "-i", tmp_path, wav_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        result = get_model().transcribe(wav_path)
-        text = result["text"].strip()
+        ffmpeg_result = subprocess.run(
+            ["ffmpeg", "-y", "-i", tmp_path, wav_path],
+            capture_output=True,
+            text=True
+        )
+
+        if ffmpeg_result.returncode != 0:
+            return {
+                "transcript": "",
+                "intent": "ERROR",
+                "data": {
+                    "error": f"FFmpeg failed: {ffmpeg_result.stderr}"
+                }
+            }
+
+        model = get_model()
+
+        result = model.transcribe(wav_path)
+
+        text = result.get("text", "").strip()
+
+        if not text:
+            return {
+                "transcript": "",
+                "intent": "ERROR",
+                "data": {
+                    "error": "No speech detected"
+                }
+            }
 
         intent = detect_intent(text)
-        token = authorization.split(" ")[1] if authorization and " " in authorization else None
+
+        token = None
+
+        if authorization and " " in authorization:
+            token = authorization.split(" ")[1]
+
         data = None
 
         if token:
             try:
                 data = execute_intent(intent, text, token)
-            except:
-                data = {"error": "Failed to process via Node API."}
-
-        os.remove(tmp_path)
-        os.remove(wav_path)
+            except Exception as e:
+                data = {"error": str(e)}
 
         if data and "error" in data:
             intent = "ERROR"
 
-        return {"transcript": text, "intent": intent, "data": data}
+        return {
+            "transcript": text,
+            "intent": intent,
+            "data": data
+        }
 
-    except:
-        return {"transcript": "", "intent": "ERROR", "data": {"error": "Server error"}}
+    except Exception as e:
+        return {
+            "transcript": "",
+            "intent": "ERROR",
+            "data": {
+                "error": str(e)
+            }
+        }
+
+    finally:
+        try:
+            if tmp_path and os.path.exists(tmp_path):
+                os.remove(tmp_path)
+        except:
+            pass
+
+        try:
+            if wav_path and os.path.exists(wav_path):
+                os.remove(wav_path)
+        except:
+            pass
