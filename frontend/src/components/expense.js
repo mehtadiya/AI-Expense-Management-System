@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import ExpensesCard from "./expenses_card";
 import Swal from "sweetalert2";
 import api from "../api/api";
+import "./expense.css"
 
 function Expense() {
     const [expenses, setExpense] = useState([]);

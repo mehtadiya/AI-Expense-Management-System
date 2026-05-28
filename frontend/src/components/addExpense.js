@@ -7,7 +7,7 @@ import Online from "./addOnline";
 import Scan from "./addScan";
 import RecordAudio from "./addAudio";
 import { useAuth } from "../context/AuthProvider";
-
+import "./addExpense.css"
 
 function AddExpense() {
     const [selectedOption,setSelectedOption]=useState(null);

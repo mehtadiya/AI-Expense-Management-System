@@ -1,0 +1,43 @@
+@media (max-width: 576px) {
+  .expense-card-col {
+    width: 50% !important;
+    padding: 6px !important;
+  }
+
+  .expense-card {
+    border-radius: 14px !important;
+    padding: 10px !important;
+    height: 100%;
+  }
+
+  .expense-card h5,
+  .expense-card h6 {
+    font-size: 13px !important;
+  }
+
+  .expense-card p,
+  .expense-card span {
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .expense-card-col {
+    width: 50% !important;
+    padding: 4px !important;
+  }
+
+  .expense-card {
+    padding: 8px !important;
+  }
+
+  .expense-card h5,
+  .expense-card h6 {
+    font-size: 12px !important;
+  }
+
+  .expense-card p,
+  .expense-card span {
+    font-size: 10px !important;
+  }
+}
