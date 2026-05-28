@@ -28,7 +28,6 @@ function Main() {
           <div className="col-3 col-md-2 d-flex align-items-center">
             <h4 className="fw-bold mb-0 app-title d-flex align-items-center gap-2">
               <img src="/spending.png" alt="logo" width={35} />
-              <span className="logo-text">ExpensePro</span>
             </h4>
           </div>
 

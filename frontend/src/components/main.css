@@ -70,7 +70,7 @@ body {
   border-radius: 20px;
   min-height: calc(100vh - 96px);
   padding: 16px;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
 @media (max-width: 1200px) {
@@ -88,34 +88,31 @@ body {
     display: none;
   }
 
-  .app-title {
-    font-size: 20px;
-  }
-
   .welcome-text {
-    font-size: 16px;
+    font-size: 17px;
   }
 }
 
 @media (max-width: 992px) {
 
   .fixed-top-header {
-    height: 68px;
+    height: 70px;
   }
 
   .main-layout {
-    margin-top: 68px;
+    margin-top: 70px;
   }
 
   .fixed-sidebar {
-    top: 68px;
+    top: 70px;
     width: 80px;
-    height: calc(100vh - 68px);
+    height: calc(100vh - 70px);
   }
 
   .content-wrapper {
     margin-left: 80px;
     width: calc(100% - 80px);
+    padding: 10px;
   }
 
   .sidebar-text {
@@ -132,12 +129,8 @@ body {
     font-size: 20px !important;
   }
 
-  .app-title {
-    font-size: 18px !important;
-  }
-
   .welcome-text {
-    font-size: 15px !important;
+    font-size: 16px !important;
   }
 
   .icon-box {
@@ -149,17 +142,17 @@ body {
 @media (max-width: 768px) {
 
   .fixed-top-header {
-    height: 64px;
+    height: 68px;
   }
 
   .main-layout {
-    margin-top: 64px;
+    margin-top: 68px;
   }
 
   .fixed-sidebar {
-    top: 64px;
+    top: 68px;
     width: 70px;
-    height: calc(100vh - 64px);
+    height: calc(100vh - 68px);
   }
 
   .content-wrapper {
@@ -168,25 +161,17 @@ body {
     padding: 8px;
   }
 
-  .logo-text {
-    display: none;
-  }
-
   .sidebar-text {
     display: none;
   }
 
-  .app-title {
-    font-size: 16px !important;
-  }
-
   .welcome-text {
-    font-size: 13px !important;
+    font-size: 15px !important;
   }
 
   .icon-box {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
   }
 
   .nav-item {
@@ -203,17 +188,17 @@ body {
 @media (max-width: 576px) {
 
   .fixed-top-header {
-    height: 60px;
+    height: 64px;
   }
 
   .main-layout {
-    margin-top: 60px;
+    margin-top: 64px;
   }
 
   .fixed-sidebar {
-    top: 60px;
+    top: 64px;
     width: 65px;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 64px);
   }
 
   .content-wrapper {
@@ -224,27 +209,19 @@ body {
 
   .content-box {
     border-radius: 14px;
-    padding: 10px;
-  }
-
-  .logo-text {
-    display: none;
+    padding: 12px;
   }
 
   .sidebar-text {
     display: none;
   }
 
-  .app-title {
-    font-size: 14px !important;
-  }
-
   .app-title img {
-    width: 28px !important;
+    width: 30px !important;
   }
 
   .welcome-text {
-    font-size: 12px !important;
+    font-size: 14px !important;
   }
 
   .icon-box {
@@ -275,17 +252,13 @@ body {
     width: calc(100% - 58px);
   }
 
-  .app-title {
-    font-size: 12px !important;
-  }
-
   .welcome-text {
-    font-size: 11px !important;
+    font-size: 13px !important;
   }
 
   .icon-box {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
   }
 
   .nav-item i {
@@ -304,17 +277,13 @@ body {
     width: calc(100% - 54px);
   }
 
-  .app-title {
-    font-size: 11px !important;
-  }
-
   .welcome-text {
-    font-size: 10px !important;
+    font-size: 12px !important;
   }
 
   .icon-box {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
   }
 
   .nav-item i {
