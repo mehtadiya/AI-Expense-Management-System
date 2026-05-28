@@ -236,11 +236,12 @@ function Dashboard() {
                     </div>
                 </div>
 
-                {/* CALENDER */}
+                
                 <div
   className="col-12 col-lg-3 calendar-card"
   style={{
     height: "370px",
+    minWidth: 0,
   }}
 >
                     <Calendar

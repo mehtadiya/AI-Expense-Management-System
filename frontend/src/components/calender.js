@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
 
-
 export default function Calendar({
   initialDate = null,
   onChange = () => {},
@@ -43,7 +42,8 @@ export default function Calendar({
     1
   );
 
-  const startWeekday = firstDayOfMonth.getDay(); // 0–6
+  const startWeekday = firstDayOfMonth.getDay();
+
   const daysInMonth = new Date(
     viewMonth.getFullYear(),
     viewMonth.getMonth() + 1,
@@ -56,20 +56,25 @@ export default function Calendar({
 
     while (currentDay <= daysInMonth) {
       const week = [];
+
       for (let i = 0; i < 7; i++) {
         const date = new Date(
           viewMonth.getFullYear(),
           viewMonth.getMonth(),
           currentDay
         );
+
         week.push({
           date,
           inMonth: date.getMonth() === viewMonth.getMonth(),
         });
+
         currentDay++;
       }
+
       grid.push(week);
     }
+
     return grid;
   }, [viewMonth, startWeekday, daysInMonth]);
 
@@ -94,7 +99,6 @@ export default function Calendar({
 
   return (
     <div className="calendar-card" style={styles.card}>
-      {/* Header */}
       <div style={styles.header}>
         <button
           className="btn btn-sm"
@@ -115,7 +119,6 @@ export default function Calendar({
         </button>
       </div>
 
-      {/* Weekdays */}
       <div style={styles.weekdays}>
         {weekdayNames.map((w) => (
           <div key={w} style={styles.weekdayCell}>
@@ -124,13 +127,13 @@ export default function Calendar({
         ))}
       </div>
 
-      {/* Days */}
       <div style={styles.grid}>
         {weeks.map((week, wi) => (
           <div key={wi} style={styles.weekRow}>
             {week.map(({ date, inMonth }, di) => {
               const isToday =
                 date.toDateString() === today.toDateString();
+
               const isSelected =
                 selected &&
                 date.toDateString() === selected.toDateString();
@@ -175,60 +178,81 @@ export default function Calendar({
 const styles = {
   card: {
     width: "100%",
-    maxWidth: 360,
+    maxWidth: "100%",
+    minWidth: 0,
     height: "100%",
     background: "#fff",
     borderRadius: 12,
     boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
-    padding: 12,
+    padding: 10,
+    overflow: "hidden",
   },
+
   header: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 8,
+    width: "100%",
   },
+
   navBtn: {
     background: "transparent",
     border: "none",
-    fontSize: 18,
-    width: 34,
-    height: 34,
+    fontSize: 16,
+    width: 28,
+    height: 28,
     color: "#3E2723",
+    padding: 0,
   },
+
   monthName: {
     fontWeight: 700,
-    fontSize: 16,
+    fontSize: 15,
     color: "#3E2723",
+    textAlign: "center",
+    flex: 1,
   },
+
   weekdays: {
     display: "grid",
-    gridTemplateColumns: "repeat(7, 1fr)",
-    fontSize: 12,
+    gridTemplateColumns: "repeat(7, minmax(0,1fr))",
+    fontSize: 11,
     textAlign: "center",
     color: "#6D4C41",
-    marginBottom: 6,
+    marginBottom: 4,
+    width: "100%",
   },
+
   weekdayCell: {
-    padding: "6px 0",
+    padding: "4px 0",
   },
+
   grid: {
     display: "flex",
     flexDirection: "column",
-    gap: 6,
+    gap: 4,
+    width: "100%",
   },
+
   weekRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(7, 1fr)",
-    gap: 6,
+    gridTemplateColumns: "repeat(7, minmax(0,1fr))",
+    gap: 4,
+    width: "100%",
   },
+
   dayCell: {
-    height: 40,
-    borderRadius: 8,
+    width: "100%",
+    aspectRatio: "1 / 1",
+    minHeight: 32,
+    borderRadius: 6,
     border: "none",
     background: "transparent",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    fontSize: 13,
+    padding: 0,
   },
 };
