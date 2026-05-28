@@ -62,17 +62,15 @@ function Expense() {
                         </h2>
                     </div>
                     <div className="col  d-flex justify-content-end me-1 align-items-center" >
-                        <Link to={`/main/addExpense`}><button
-                            type="button"
-                            className="btn btn-success px-4 py-2"
-                            style={{
-                                borderRadius: "12px",
-                                fontWeight: "600",
-                                boxShadow: "0 4px 15px rgba(72, 187, 120, 0.3)",
-                            }}
-                        >
-                            <i className="bi bi-plus-circle me-2"></i>Add Expense
-                        </button></Link>
+                        <Link to={`/main/addExpense`}>
+  <button
+    type="button"
+    className="btn btn-success add-expense-btn"
+  >
+    <i className="bi bi-plus-circle"></i>
+    <span className="add-btn-text ms-2">Add Expense</span>
+  </button>
+</Link>
                     </div>
                 </div>
 

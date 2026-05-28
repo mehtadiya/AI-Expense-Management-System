@@ -198,24 +198,19 @@ useEffect( () => {
         </div>
         <div className="col d-flex justify-content-end me-1 align-items-center">
          
-            <button
-            onClick={handleAdd}
-              type="button"
-              className="btn btn-success px-4 py-2"
-              style={{
-                borderRadius: "12px",
-                fontWeight: "600",
-                boxShadow: "0 4px 15px rgba(72, 187, 120, 0.3)",
-              }}
-            >
-              <i className="bi bi-plus-circle me-2"></i>Add Category
-            </button>
+           <button
+  onClick={handleAdd}
+  type="button"
+  className="btn btn-success add-category-btn"
+>
+  <i className="bi bi-plus-circle"></i>
+  <span className="add-btn-text ms-2">Add Category</span>
+</button>
           
         </div>
       </div>
 
-      <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4 mt-3">
-        {categories.length> 0 ? (
+<div className="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 mt-3">        {categories.length> 0 ? (
           categories.map((data) => (
           <div className="col" key={data.categoryID}>
             <div
