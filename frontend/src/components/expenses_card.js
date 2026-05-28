@@ -35,7 +35,6 @@ function ExpensesCard({ fetchExpenses }) {
     <div className="container mt-4 mb-4">
       <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
 
-        {/* --- ALL CATEGORY CARD --- */}
         <div className="col">
           <div
             onClick={() => {
@@ -73,7 +72,7 @@ function ExpensesCard({ fetchExpenses }) {
           </div>
         </div>
 
-        {/* --- CATEGORY CARDS --- */}
+       
         {categories.length > 0 ?
           (
             categories.map((data) => (
