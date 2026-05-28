@@ -118,9 +118,7 @@
     font-size: 17px !important;
   }
 
-  .table-responsive {
-    height: 200px !important;
-  }
+  
 
   .table th,
   .table td {
@@ -170,9 +168,7 @@
     padding: 18px !important;
   }
 
-  .table-responsive {
-    height: 180px !important;
-  }
+  
 
   .table th,
   .table td {
@@ -223,9 +219,7 @@
     border-radius: 14px !important;
   }
 
-  .table-responsive {
-    height: 160px !important;
-  }
+ 
 
   .table th,
   .table td {
@@ -267,9 +261,7 @@
     margin-top: 12px !important;
   }
 
-  .table-responsive {
-    height: 150px !important;
-  }
+  
 
   .table th,
   .table td {
@@ -306,9 +298,6 @@
     margin-top: 10px !important;
   }
 
-  .table-responsive {
-    height: 140px !important;
-  }
 
   .table th,
   .table td {

@@ -261,7 +261,7 @@ function Dashboard() {
                         <h5 className="fw-bold mb-4">Recent Expenses</h5>
 
                         <div className="table-responsive pe-4" style={{
-                            height: "auto",
+                            height: "260px",
                             width: "100%",
                             overflowY: "auto",
                         }}>
