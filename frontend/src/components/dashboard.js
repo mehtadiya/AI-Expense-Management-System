@@ -101,15 +101,15 @@ function Dashboard() {
     }, 0);
 
     const monthlyBudget = newCategoryData.find(
-    (b) => b.categoryID === null
+        (b) => b.categoryID === null
     );
 
     const totalBudget = monthlyBudget
-    ? Number(monthlyBudget.amountLimit)
-    : newCategoryData.reduce(
-        (sum, b) => sum + Number(b.amountLimit || 0),
-        0
-    );
+        ? Number(monthlyBudget.amountLimit)
+        : newCategoryData.reduce(
+            (sum, b) => sum + Number(b.amountLimit || 0),
+            0
+        );
 
     const remaining = totalBudget - totalExpense;
 
@@ -161,15 +161,17 @@ function Dashboard() {
             </div>
 
 
-            <div className="row g-4 mb-4">
+            <div className="row g-3 mb-4 dashboard-section">
                 {/* BUDGET OVERVIEW CARD */}
-                <div className="col-lg-9 budget-card" style={{
-                    height: "370px"
-                }} >
-                    <div
-                        className="card shadow-sm ps-4 pt-4 pb-4 pe-2 border-0"
-                        style={{ borderRadius: "20px", color: "#0A382B", height: "100%" }}
-                    >
+                <div
+                    className="col-12 col-lg-9 budget-card"
+                    style={{
+                        height: "370px",
+                    }}
+                >                    <div
+                    className="card shadow-sm ps-4 pt-4 pb-4 pe-2 border-0"
+                    style={{ borderRadius: "20px", color: "#0A382B", height: "100%" }}
+                >
                         <h5 className="fw-bold mb-4">Budget Overview</h5>
 
                         <div className="pe-3 " style={{
@@ -235,9 +237,12 @@ function Dashboard() {
                 </div>
 
                 {/* CALENDER */}
-                <div className="col-lg " style={{
-                    height: "370px"
-                }}>
+                <div
+  className="col-12 col-lg-3 calendar-card"
+  style={{
+    height: "370px",
+  }}
+>
                     <Calendar
                         initialDate={selectedDate}
                         onChange={(date) => setSelectedDate(date)}

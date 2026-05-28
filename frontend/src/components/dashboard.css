@@ -21,7 +21,8 @@
     font-size: 18px;
   }
 
-  .budget-card {
+  .budget-card,
+  .calendar-card {
     height: auto !important;
   }
 
@@ -40,13 +41,14 @@
     min-height: 90px;
   }
 
-  .budget-card {
+  .budget-card,
+  .calendar-card {
+    width: 100% !important;
     height: auto !important;
-    margin-bottom: 20px;
   }
 
   .calendar-card {
-    height: auto !important;
+    margin-top: 0 !important;
   }
 
   .table-responsive {
@@ -56,44 +58,12 @@
 
 @media (max-width: 768px) {
   .dashboard-title {
-    font-size: 26px !important;
-  }
-
-  .summary-card {
-    padding: 12px !important;
-  }
-
-  .summary-card .fs-6 {
-    font-size: 12px !important;
-  }
-
-  .summary-card h6 {
-    font-size: 16px !important;
-  }
-
-  .budget-card {
-    padding: 0 !important;
-  }
-
-  .table th,
-  .table td {
-    font-size: 13px;
-    white-space: nowrap;
-  }
-
-  .table-responsive {
-    overflow-x: auto;
-  }
-}
-
-@media (max-width: 576px) {
-  .dashboard-title {
     font-size: 24px !important;
   }
 
   .summary-card {
     padding: 10px !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
   }
 
   .summary-card .fs-6 {
@@ -104,33 +74,36 @@
     font-size: 14px !important;
   }
 
-  .budget-card {
-    height: auto !important;
+  .budget-card .card,
+  .calendar-card .card {
+    border-radius: 16px !important;
   }
 
-  .calendar-card {
-    height: auto !important;
-    margin-top: 15px;
+  .budget-card {
+    margin-bottom: 16px !important;
   }
 
   .table-responsive {
-    height: 150px !important;
+    overflow-x: auto;
+    height: 170px !important;
   }
 
   .table th,
   .table td {
-    font-size: 11px;
+    font-size: 12px;
+    white-space: nowrap;
     padding: 8px;
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 576px) {
   .dashboard-title {
     font-size: 22px !important;
   }
 
   .summary-card {
     padding: 8px !important;
+    min-height: 75px;
   }
 
   .summary-card .fs-6 {
@@ -141,13 +114,28 @@
     font-size: 12px !important;
   }
 
+  .budget-card,
+  .calendar-card {
+    padding: 0 !important;
+  }
+
+  .budget-card .card,
+  .calendar-card .card {
+    padding: 14px !important;
+  }
+
+  .table-responsive {
+    height: 150px !important;
+  }
+
   .table th,
   .table td {
-    font-size: 10px;
+    font-size: 11px;
+    padding: 6px;
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 420px) {
   .dashboard-title {
     font-size: 20px !important;
   }
@@ -156,8 +144,32 @@
     padding: 6px !important;
   }
 
+  .summary-card .fs-6 {
+    font-size: 9px !important;
+  }
+
   .summary-card h6 {
     font-size: 11px !important;
+  }
+
+  .budget-card .card,
+  .calendar-card .card {
+    padding: 12px !important;
+  }
+
+  .table th,
+  .table td {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .dashboard-title {
+    font-size: 18px !important;
+  }
+
+  .summary-card h6 {
+    font-size: 10px !important;
   }
 
   .table th,

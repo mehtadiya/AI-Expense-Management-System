@@ -22,12 +22,11 @@ function Main() {
   return (
     <div className="container-fluid">
 
-      <div className="row main-header shadow-sm px-3 py-2">
-
+<div className="row main-header shadow-sm px-3 py-2 fixed-top-header">
         <div className="col-2 d-flex align-items-center">
           <h4 className="fw-bold mb-0 app-title d-flex align-items-center gap-2">
             <img src="/spending.png" alt="logo" width={35} />
-            ExpensePro
+            <span className="logo-text">ExpensePro</span>
           </h4>
         </div>
 
@@ -91,14 +90,14 @@ function Main() {
       <div className="row">
 
         <div
-          className="col-2 sidebar-col"
+  className="col-2 sidebar-col fixed-sidebar"
           style={{ backgroundColor: "#0A382B", minHeight: "100vh" }}
         >
           <Sidebar />
         </div>
 
         <div
-          className="col m-2 p-3 content-box"
+          className="col m-2 p-3 content-box main-content"
           style={{
             backgroundColor: "#F0FFF0",
             borderRadius: "20px",
