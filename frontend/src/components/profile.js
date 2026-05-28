@@ -161,64 +161,129 @@ function Profile() {
     }
 
     return (
-        <>
-            <div className="container-fluid  ">
-                <div className="row ">
-                    <div className="col-5  mt-4">
-                        {userData.length > 0 ? (
-                            userData.map((data) => (
-                                <div class=" mb-3 " style={{ maxWidth: "540px;", height: "200px", backgroundColor: "white", borderRadius: "20px" }}>
-                                    <div class="row g-0 " style={{ borderRadius: "20px" }}>
-                                        <div class="col-md-5  d-flex align-items-center justify-content-center  " style={{ height: "200px" }}>
-                                            {data.userImage ? (
-                                                <img
-                                                    src={data.userImage}
-                                                    alt="user"
-                                                    style={{
-                                                        width: "70%",
-                                                        height: "90%",
-                                                        marginTop: "10px",
-                                                        borderRadius: "50%",
-                                                        objectFit: "cover"
-                                                    }}
-                                                />
-                                            ) : (
-                                                <i
-                                                    className="bi bi-person-circle"
-                                                    style={{ fontSize: "80px", color: "#0A382B" }}
-                                                ></i>
-                                            )}
-                                        </div>
-                                        <div class="col-md-7 mt-4" >
-                                            <div className="card-body" style={{ lineHeight: "5", color: "#0A382B" }}>
-                                                <h5 className="card-title mb-4">User Name: {data.userName}</h5>
-                                                <h5 className="card-title">Email: {data.email}</h5>
-                                                <button onClick={() => handleEdit(data)} className="btn mt-2 me-2" style={{ backgroundColor: "#0A382B", color: "#F0FFF0" }}>Edit Details</button>
+    <>
+        <div className="container-fluid py-3">
+            <div className="row g-3 align-items-start">
 
-                                                <button onClick={() => handleChangePassword(data)} className="btn mt-2" style={{ backgroundColor: "#0A382B", color: "#F0FFF0" }}>Change Password</button>
+                <div className="col-12 col-lg-9">
+                    {userData.length > 0 ? (
+                        userData.map((data) => (
+                            <div
+                                className="card border-0 shadow-sm p-3 p-md-4"
+                                style={{
+                                    borderRadius: "22px",
+                                    backgroundColor: "white",
+                                }}
+                                key={data.userID}
+                            >
+                                <div className="row align-items-center g-4">
+
+                                    <div className="col-12 col-md-4 d-flex justify-content-center">
+                                        {data.userImage ? (
+                                            <img
+                                                src={data.userImage}
+                                                alt="user"
+                                                style={{
+                                                    width: "170px",
+                                                    height: "170px",
+                                                    borderRadius: "50%",
+                                                    objectFit: "cover",
+                                                    border: "4px solid #F0FFF0",
+                                                }}
+                                            />
+                                        ) : (
+                                            <i
+                                                className="bi bi-person-circle"
+                                                style={{
+                                                    fontSize: "140px",
+                                                    color: "#0A382B",
+                                                }}
+                                            ></i>
+                                        )}
+                                    </div>
+
+                                    <div className="col-12 col-md-8">
+                                        <div
+                                            className="d-flex flex-column justify-content-center h-100"
+                                            style={{ color: "#0A382B" }}
+                                        >
+                                            <h3
+                                                className="fw-bold mb-3"
+                                                style={{
+                                                    wordBreak: "break-word",
+                                                }}
+                                            >
+                                                {data.userName}
+                                            </h3>
+
+                                            <p
+                                                className="mb-4 text-muted"
+                                                style={{
+                                                    fontSize: "16px",
+                                                    wordBreak: "break-word",
+                                                }}
+                                            >
+                                                {data.email}
+                                            </p>
+
+                                            <div className="d-flex flex-wrap gap-2">
+                                                <button
+                                                    onClick={() => handleEdit(data)}
+                                                    className="btn"
+                                                    style={{
+                                                        backgroundColor: "#0A382B",
+                                                        color: "#F0FFF0",
+                                                        borderRadius: "12px",
+                                                        padding: "10px 18px",
+                                                        fontWeight: "600",
+                                                    }}
+                                                >
+                                                    Edit Details
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleChangePassword(data)}
+                                                    className="btn"
+                                                    style={{
+                                                        backgroundColor: "#0A382B",
+                                                        color: "#F0FFF0",
+                                                        borderRadius: "12px",
+                                                        padding: "10px 18px",
+                                                        fontWeight: "600",
+                                                    }}
+                                                >
+                                                    Change Password
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
+
                                 </div>
-                            ))
-                        ) : (
-                            <p>No result </p>)
-                        }
-
-
-                    </div>
-                    <div className="col mt-4   d-flex justify-content-end align-items-start">
-                        <button
-                            onClick={handleLogout}
-                            className="btn btn-outline-danger d"
-                        >
-                            <i className="bi bi-box-arrow-right me-2"></i>
-                            Logout
-                        </button>
-                    </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No result</p>
+                    )}
                 </div>
+
+                <div className="col-12 col-lg-3 d-flex justify-content-lg-end justify-content-start">
+                    <button
+                        onClick={handleLogout}
+                        className="btn btn-outline-danger"
+                        style={{
+                            borderRadius: "12px",
+                            padding: "10px 18px",
+                            fontWeight: "600",
+                        }}
+                    >
+                        <i className="bi bi-box-arrow-right me-2"></i>
+                        Logout
+                    </button>
+                </div>
+
             </div>
-        </>
-    )
+        </div>
+    </>
+)
 }
 export default Profile;
