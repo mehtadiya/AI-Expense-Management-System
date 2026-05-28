@@ -219,16 +219,14 @@ useEffect( () => {
           categories.map((data) => (
           <div className="col" key={data.categoryID}>
             <div
-              className="card text-center shadow-sm border-0 p-4"
-              style={{
+ className="card text-center shadow-sm border-0 p-4 category-card"              style={{
                 borderRadius: "20px",
                 backgroundColor: "white",
                 transition: "all 0.3s ease",
               }}
             >
               <div
-                className="icon-wrapper mx-auto mb-3 d-flex justify-content-center align-items-center"
-                style={{
+className="icon-wrapper mx-auto mb-3"                style={{
                   backgroundColor: "white",
                   border: `1px solid ${data.color}`,
                   borderRadius: "50%",
