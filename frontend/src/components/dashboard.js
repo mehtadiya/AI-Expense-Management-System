@@ -255,16 +255,21 @@ function Dashboard() {
             <div className="row">
                 <div className="col">
                     <div
-                        className="card shadow-sm p-4 border-0"
-                        style={{ borderRadius: "20px", height: "", color: "#0A382B" }}
-                    >
+  className="card shadow-sm p-4 border-0"
+  style={{
+    borderRadius: "20px",
+    color: "#0A382B",
+    height: "auto"
+  }}
+>
                         <h5 className="fw-bold mb-4">Recent Expenses</h5>
 
-                        <div className="table-responsive pe-4" style={{
-                            height: "260px",
-                            width: "100%",
-                            overflowY: "auto",
-                        }}>
+                       <div
+  className="table-responsive pe-2"
+  style={{
+    width: "100%",
+  }}
+>
                             <table className="table align-middle">
                                 <thead
                                     className="table-light"

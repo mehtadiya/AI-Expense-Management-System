@@ -26,6 +26,9 @@
 
 .table-responsive {
   overflow-x: auto;
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: fit-content !important;
 }
 
 .table th,
