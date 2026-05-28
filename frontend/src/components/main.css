@@ -1,4 +1,4 @@
-/* 🔹 Default (Desktop) */
+/* 
 .sidebar-text {
   display: inline;
 }
@@ -8,7 +8,7 @@
 }
 
 
-/* 🔹 Mobile Devices */
+
 @media (max-width: 576px) {
 
   .main-header {
@@ -57,14 +57,12 @@
     font-size: 20px !important;
   }
 
-  /* ✅ Full width content */
   .content-col {
     width: calc(100% - 70px) !important;
     margin: 0 !important;
   }
 }
 
-/* 🔹 Tablets */
 @media (max-width: 992px) {
 
   .sidebar-col {
@@ -76,7 +74,6 @@
   }
 }
 
-/* 🔹 Large Screens */
 @media (min-width: 1200px) {
 
   .app-title {
@@ -85,5 +82,238 @@
 
   .welcome-text {
     font-size: 18px;
+  }
+} */
+
+.sidebar-text {
+  display: inline;
+}
+
+.main-col {
+  width: 16%;
+  color: #0A382B;
+}
+
+.content-box {
+  overflow-x: auto;
+}
+
+@media (max-width: 1400px) {
+  .app-title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .app-title {
+    font-size: 20px !important;
+  }
+
+  .main-header h4 {
+    font-size: 18px !important;
+  }
+
+  .icon-box {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .sidebar-col {
+    width: 90px !important;
+    padding: 0 !important;
+  }
+
+  .sidebar-text {
+    display: none;
+  }
+
+  .content-box {
+    min-height: auto !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .main-header {
+    padding: 10px !important;
+  }
+
+  .app-title {
+    font-size: 18px !important;
+  }
+
+  .main-header h4 {
+    font-size: 16px !important;
+  }
+
+  .icon-box {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .sidebar-col {
+    width: 80px !important;
+    min-height: 100vh !important;
+  }
+
+  .sidebar-text {
+    display: none;
+  }
+
+  .nav-item {
+    justify-content: center !important;
+    padding: 12px 0 !important;
+  }
+
+  .nav-item i {
+    margin: 0 !important;
+    font-size: 20px !important;
+  }
+
+  .content-box {
+    margin: 10px !important;
+    padding: 18px !important;
+    border-radius: 16px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .app-title {
+    font-size: 16px !important;
+  }
+
+  .main-header h4 {
+    font-size: 14px !important;
+  }
+
+  .icon-box {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .sidebar-col {
+    width: 70px !important;
+  }
+
+  .sidebar-text {
+    display: none;
+  }
+
+  .content-box {
+    margin: 8px !important;
+    padding: 14px !important;
+    min-height: auto !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-header {
+    padding: 8px !important;
+  }
+
+  .app-title {
+    font-size: 14px !important;
+    gap: 6px !important;
+  }
+
+  .app-title img {
+    width: 28px !important;
+  }
+
+  .main-header h4 {
+    font-size: 12px !important;
+  }
+
+  .icon-box {
+    width: 34px !important;
+    height: 34px !important;
+    margin: 0 2px !important;
+  }
+
+  .sidebar-col {
+    width: 65px !important;
+    padding: 0 !important;
+  }
+
+  .sidebar-text {
+    display: none;
+  }
+
+  .nav-item {
+    justify-content: center !important;
+    padding: 10px 0 !important;
+  }
+
+  .nav-item i {
+    margin: 0 !important;
+    font-size: 18px !important;
+  }
+
+  .content-box {
+    margin: 6px !important;
+    padding: 12px !important;
+    border-radius: 14px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .app-title {
+    font-size: 12px !important;
+  }
+
+  .app-title img {
+    width: 24px !important;
+  }
+
+  .main-header h4 {
+    font-size: 11px !important;
+  }
+
+  .icon-box {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .sidebar-col {
+    width: 58px !important;
+  }
+
+  .nav-item i {
+    font-size: 16px !important;
+  }
+
+  .content-box {
+    padding: 10px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-title {
+    font-size: 11px !important;
+  }
+
+  .main-header h4 {
+    font-size: 10px !important;
+  }
+
+  .icon-box {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .sidebar-col {
+    width: 54px !important;
+  }
+
+  .nav-item i {
+    font-size: 15px !important;
+  }
+
+  .content-box {
+    padding: 8px !important;
   }
 }

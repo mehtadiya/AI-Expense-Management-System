@@ -1,0 +1,142 @@
+@media (max-width: 1400px) {
+  .expense-option-card {
+    height: 170px !important;
+    padding: 18px !important;
+  }
+
+  .expense-option-card h6 {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .expense-option-card {
+    height: 165px !important;
+    padding: 16px !important;
+  }
+
+  .expense-option-card .icon-wrapper {
+    width: 65px !important;
+    height: 65px !important;
+    font-size: 24px !important;
+  }
+
+  .expense-option-card h6 {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 992px) {
+  .expense-option-col {
+    margin-bottom: 20px;
+  }
+
+  .expense-option-card {
+    height: 160px !important;
+    padding: 16px !important;
+  }
+
+  .expense-option-card .icon-wrapper {
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 22px !important;
+  }
+
+  .expense-option-card h6 {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .expense-option-col {
+    width: 50% !important;
+    margin-bottom: 16px;
+  }
+
+  .expense-option-card {
+    height: 150px !important;
+    padding: 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .expense-option-card .icon-wrapper {
+    width: 55px !important;
+    height: 55px !important;
+    font-size: 20px !important;
+  }
+
+  .expense-option-card h6 {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 576px) {
+  .expense-option-col {
+    width: 50% !important;
+    padding: 6px !important;
+  }
+
+  .expense-option-card {
+    height: 140px !important;
+    padding: 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .expense-option-card .icon-wrapper {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 18px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .expense-option-card h6 {
+    font-size: 12px;
+  }
+
+  .expense-main-card {
+    padding: 10px !important;
+    border-radius: 14px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .expense-option-card {
+    height: 130px !important;
+    padding: 10px !important;
+  }
+
+  .expense-option-card .icon-wrapper {
+    width: 45px !important;
+    height: 45px !important;
+    font-size: 16px !important;
+  }
+
+  .expense-option-card h6 {
+    font-size: 11px;
+  }
+
+  .expense-main-card {
+    padding: 8px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .expense-option-card {
+    height: 120px !important;
+    padding: 8px !important;
+  }
+
+  .expense-option-card .icon-wrapper {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 15px !important;
+  }
+
+  .expense-option-card h6 {
+    font-size: 10px;
+  }
+
+  .expense-main-card {
+    padding: 6px !important;
+  }
+}

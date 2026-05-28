@@ -59,10 +59,10 @@ const userID=user?.userID;
         {/* Boxes*/}
       <div className="row mb-4 d-flex justify-content-between">
         {options.map((opt, index) => (
-          <div className="  col-lg-2" key={index}>
+          <div className="col-lg-2 col-md-4 col-sm-6 expense-option-col" key={index}>
             <div
             onClick={()=>setSelectedOption(opt.option)}
-              className="card text-center border-0 shadow-sm"
+              className="card text-center border-0 shadow-sm expense-option-card"
               style={{
                 borderRadius: "20px",
                 padding: "20px",
@@ -102,7 +102,7 @@ const userID=user?.userID;
 
       <div className="row ">
         <div className="col ">
-            <div className="card p-2" style={{
+            <div className="card p-2 expense-main-card" style={{
                 borderRadius: "20px",
                 transition: "all 0.3s ease",
                 background: "white",
