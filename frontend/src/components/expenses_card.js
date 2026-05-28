@@ -32,7 +32,7 @@ function ExpensesCard({ fetchExpenses }) {
   return (
     <div className="container-fluid mt-3 mb-3 px-1">
       <div className="row g-2">
-        <div className="col-6 col-lg-3">
+        <div className="col-6 col-md-4 col-lg-3">
           <div
             onClick={() => {
               setSelectedCategory("");
@@ -73,8 +73,7 @@ function ExpensesCard({ fetchExpenses }) {
 
         {categories.length > 0 ? (
           categories.map((data) => (
-            <div className="col-6 col-lg-3" key={data.categoryID}>
-              <div
+<div className="col-6 col-md-4 col-lg-3" key={data.categoryID}>              <div
                 onClick={() => {
                   setSelectedCategory(data.category);
                   fetchExpenses(data.category);
