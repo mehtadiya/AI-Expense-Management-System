@@ -39,41 +39,34 @@ useEffect( () => {
     )
     .join("");
     Swal.fire({
-      title: "Edit Category",
-      html: `
-  <div style="text-align:left;">
-    <div class="mb-3">
-      <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Category Name</label>
-      <input id="category" type="text" class="swal2-input" 
-        style="width:90%; margin:0;" 
-        value="${data.category}" 
-        placeholder="Enter category name" />
+  title: "Edit Category",
+  width: window.innerWidth < 576 ? "95%" : "32rem",
+  padding: window.innerWidth < 576 ? "1rem" : "1.5rem",
+  customClass: {
+    popup: "rounded-4",
+  },
+  html: `
+    <div style="text-align:left;">
+      <div class="mb-3">
+        <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Category Name</label>
+        <input id="category" type="text" class="swal2-input" 
+          style="width:90%; margin:0;" 
+          value="${data.category}" 
+          placeholder="Enter category name" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Select Icon</label>
+        <select id="iconID" class="swal2-select" style="width:90%; margin:0;">
+          ${iconOptions}
+        </select>
+      </div>
     </div>
-
-    <div class="mb-3">
-      <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Select Icon</label>
-      <select id="iconID" class="swal2-select" style="width:90%; margin:0;">
-        ${iconOptions}
-      </select>
-    </div>
-  </div>
-`,
-
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: "Update",
-      preConfirm: () => {
-        const category = document.getElementById("category").value;
-        const iconID = document.getElementById("iconID").value;
-
-        if (!category || !iconID) {
-          Swal.showValidationMessage("Please fill out all fields");
-          return false;
-        }
-
-        return { category, iconID };
-      },
-    }).then(async (result) => {
+  `,
+  focusConfirm: false,
+  showCancelButton: true,
+  confirmButtonText: "Update",
+}).then(async (result) => {
       if (result.isConfirmed) {
         const updated = result.value;
         await api.put(`categories/${data.categoryID}`,{
@@ -95,14 +88,19 @@ useEffect( () => {
   // Delete category 
   const handleDelete = (data) => {
     Swal.fire({
-      title: "Are you sure?",
-      text: "This category and all related expenses will be permanently deleted!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
+  title: "Are you sure?",
+  text: "This category and all related expenses will be permanently deleted!",
+  icon: "warning",
+  width: window.innerWidth < 576 ? "90%" : "28rem",
+  padding: window.innerWidth < 576 ? "1rem" : "1.25rem",
+  customClass: {
+    popup: "rounded-4",
+  },
+  showCancelButton: true,
+  confirmButtonColor: "#d33",
+  cancelButtonColor: "#3085d6",
+  confirmButtonText: "Yes, delete it!",
+}).then((result) => {
       if (result.isConfirmed) {
         api.delete(`/categories/${data.categoryID}`)
        
@@ -132,40 +130,34 @@ useEffect( () => {
     .join("")}
 `;
 
-  Swal.fire({
-    title: "Add Category",
-    html: `
-      <div style="text-align:left;">
-        <div class="mb-3">
-          <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Category Name</label>
-          <input id="category" type="text" class="swal2-input"
-            style="width:90%; margin:0;"
-            placeholder="Enter category name" />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Select Icon</label>
-          <select id="iconID" class="swal2-select" style="width:90%; margin:0;">
-            ${iconOptions}
-          </select>
-        </div>
+ Swal.fire({
+  title: "Add Category",
+  width: window.innerWidth < 576 ? "95%" : "32rem",
+  padding: window.innerWidth < 576 ? "1rem" : "1.5rem",
+  customClass: {
+    popup: "rounded-4",
+  },
+  html: `
+    <div style="text-align:left;">
+      <div class="mb-3">
+        <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Category Name</label>
+        <input id="category" type="text" class="swal2-input"
+          style="width:90%; margin:0;"
+          placeholder="Enter category name" />
       </div>
-    `,
-    focusConfirm: false,
-    showCancelButton: true,
-    confirmButtonText: "Add",
-    preConfirm: () => {
-      const category = document.getElementById("category").value;
-      const iconID = document.getElementById("iconID").value;
 
-      if (!category || !iconID) {
-        Swal.showValidationMessage("Please fill out all fields");
-        return false;
-      }
-      console.log("iconID",iconID);
-      return { category, iconID };
-    },
-  }).then(async (result) => {
+      <div class="mb-3">
+        <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Select Icon</label>
+        <select id="iconID" class="swal2-select" style="width:90%; margin:0;">
+          ${iconOptions}
+        </select>
+      </div>
+    </div>
+  `,
+  focusConfirm: false,
+  showCancelButton: true,
+  confirmButtonText: "Add",
+}).then(async (result) => {
     if (result.isConfirmed) {
 
       const newCategory = result.value;
