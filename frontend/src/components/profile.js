@@ -108,7 +108,7 @@ function Profile() {
                 if (!password || !newPassword || !confirmPassword) {
                     Swal.showValidationMessage("Please fill out all fields");
                     return false;
-                } 
+                }
 
                 if (newPassword != confirmPassword) {
                     Swal.showValidationMessage("Your new password and confirm password doesn't match");
@@ -155,135 +155,140 @@ function Profile() {
         }).then((result) => {
             if (result.isConfirmed) {
                 localStorage.clear();
-                navigate("/login")
+
+                window.history.pushState(null, "", "/login");
+
+                navigate("/login", { replace: true });
+
+                window.location.reload();
             }
         })
     }
 
     return (
-    <>
-        <div className="container-fluid py-3">
-            <div className="row g-3 align-items-start">
+        <>
+            <div className="container-fluid py-3">
+                <div className="row g-3 align-items-start">
 
-                <div className="col-12 col-lg-9">
-                    {userData.length > 0 ? (
-                        userData.map((data) => (
-                            <div
-                                className="card border-0 shadow-sm p-3 p-md-4"
-                                style={{
-                                    borderRadius: "22px",
-                                    backgroundColor: "white",
-                                }}
-                                key={data.userID}
-                            >
-                                <div className="row align-items-center g-4">
+                    <div className="col-12 col-lg-9">
+                        {userData.length > 0 ? (
+                            userData.map((data) => (
+                                <div
+                                    className="card border-0 shadow-sm p-3 p-md-4"
+                                    style={{
+                                        borderRadius: "22px",
+                                        backgroundColor: "white",
+                                    }}
+                                    key={data.userID}
+                                >
+                                    <div className="row align-items-center g-4">
 
-                                    <div className="col-12 col-md-4 d-flex justify-content-center">
-                                        {data.userImage ? (
-                                            <img
-                                                src={data.userImage}
-                                                alt="user"
-                                                style={{
-                                                    width: "170px",
-                                                    height: "170px",
-                                                    borderRadius: "50%",
-                                                    objectFit: "cover",
-                                                    border: "4px solid #F0FFF0",
-                                                }}
-                                            />
-                                        ) : (
-                                            <i
-                                                className="bi bi-person-circle"
-                                                style={{
-                                                    fontSize: "140px",
-                                                    color: "#0A382B",
-                                                }}
-                                            ></i>
-                                        )}
-                                    </div>
-
-                                    <div className="col-12 col-md-8">
-                                        <div
-                                            className="d-flex flex-column justify-content-center h-100"
-                                            style={{ color: "#0A382B" }}
-                                        >
-                                            <h3
-                                                className="fw-bold mb-3"
-                                                style={{
-                                                    wordBreak: "break-word",
-                                                }}
-                                            >
-                                                {data.userName}
-                                            </h3>
-
-                                            <p
-                                                className="mb-4 text-muted"
-                                                style={{
-                                                    fontSize: "16px",
-                                                    wordBreak: "break-word",
-                                                }}
-                                            >
-                                                {data.email}
-                                            </p>
-
-                                            <div className="d-flex flex-wrap gap-2">
-                                                <button
-                                                    onClick={() => handleEdit(data)}
-                                                    className="btn"
+                                        <div className="col-12 col-md-4 d-flex justify-content-center">
+                                            {data.userImage ? (
+                                                <img
+                                                    src={data.userImage}
+                                                    alt="user"
                                                     style={{
-                                                        backgroundColor: "#0A382B",
-                                                        color: "#F0FFF0",
-                                                        borderRadius: "12px",
-                                                        padding: "10px 18px",
-                                                        fontWeight: "600",
+                                                        width: "170px",
+                                                        height: "170px",
+                                                        borderRadius: "50%",
+                                                        objectFit: "cover",
+                                                        border: "4px solid #F0FFF0",
+                                                    }}
+                                                />
+                                            ) : (
+                                                <i
+                                                    className="bi bi-person-circle"
+                                                    style={{
+                                                        fontSize: "140px",
+                                                        color: "#0A382B",
+                                                    }}
+                                                ></i>
+                                            )}
+                                        </div>
+
+                                        <div className="col-12 col-md-8">
+                                            <div
+                                                className="d-flex flex-column justify-content-center h-100"
+                                                style={{ color: "#0A382B" }}
+                                            >
+                                                <h3
+                                                    className="fw-bold mb-3"
+                                                    style={{
+                                                        wordBreak: "break-word",
                                                     }}
                                                 >
-                                                    Edit Details
-                                                </button>
+                                                    {data.userName}
+                                                </h3>
 
-                                                <button
-                                                    onClick={() => handleChangePassword(data)}
-                                                    className="btn"
+                                                <p
+                                                    className="mb-4 text-muted"
                                                     style={{
-                                                        backgroundColor: "#0A382B",
-                                                        color: "#F0FFF0",
-                                                        borderRadius: "12px",
-                                                        padding: "10px 18px",
-                                                        fontWeight: "600",
+                                                        fontSize: "16px",
+                                                        wordBreak: "break-word",
                                                     }}
                                                 >
-                                                    Change Password
-                                                </button>
+                                                    {data.email}
+                                                </p>
+
+                                                <div className="d-flex flex-wrap gap-2">
+                                                    <button
+                                                        onClick={() => handleEdit(data)}
+                                                        className="btn"
+                                                        style={{
+                                                            backgroundColor: "#0A382B",
+                                                            color: "#F0FFF0",
+                                                            borderRadius: "12px",
+                                                            padding: "10px 18px",
+                                                            fontWeight: "600",
+                                                        }}
+                                                    >
+                                                        Edit Details
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => handleChangePassword(data)}
+                                                        className="btn"
+                                                        style={{
+                                                            backgroundColor: "#0A382B",
+                                                            color: "#F0FFF0",
+                                                            borderRadius: "12px",
+                                                            padding: "10px 18px",
+                                                            fontWeight: "600",
+                                                        }}
+                                                    >
+                                                        Change Password
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
+
                                     </div>
-
                                 </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p>No result</p>
-                    )}
-                </div>
+                            ))
+                        ) : (
+                            <p>No result</p>
+                        )}
+                    </div>
 
-                <div className="col-12 col-lg-3 d-flex justify-content-lg-end justify-content-start">
-                    <button
-                        onClick={handleLogout}
-                        className="btn btn-outline-danger"
-                        style={{
-                            borderRadius: "12px",
-                            padding: "10px 18px",
-                            fontWeight: "600",
-                        }}
-                    >
-                        <i className="bi bi-box-arrow-right me-2"></i>
-                        Logout
-                    </button>
-                </div>
+                    <div className="col-12 col-lg-3 d-flex justify-content-lg-end justify-content-start">
+                        <button
+                            onClick={handleLogout}
+                            className="btn btn-outline-danger"
+                            style={{
+                                borderRadius: "12px",
+                                padding: "10px 18px",
+                                fontWeight: "600",
+                            }}
+                        >
+                            <i className="bi bi-box-arrow-right me-2"></i>
+                            Logout
+                        </button>
+                    </div>
 
+                </div>
             </div>
-        </div>
-    </>
-)
+        </>
+    )
 }
 export default Profile;
