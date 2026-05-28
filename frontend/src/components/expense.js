@@ -133,57 +133,69 @@ function Expense() {
 
            
                                                     Swal.fire({
-                                                        title: "Edit Expense",
-                                                        html: `
-                                                                <div class="container-fluid">
-                                                                <div class="row mb-2">
-                                                                    <div class="col-4"><b>Category</b></div>
-                                                                    <div class="col">
-                                                                    <select id="category" class="form-select">
-                                                                        ${categoryOptions}
-                                                                    </select>
-                                                                    </div>
-                                                                </div>
+  title: "Edit Expense",
+  customClass: {
+    popup: "swal-popup",
+    title: "swal-title",
+    htmlContainer: "swal-html",
+    confirmButton: "swal-confirm-btn",
+    cancelButton: "swal-cancel-btn",
+  },
+  html: `
+    <div class="container-fluid">
+      <div class="row mb-3 align-items-center">
+        <div class="col-4"><b>Category</b></div>
+        <div class="col">
+          <select id="category" class="form-select swal-select-custom">
+            ${categoryOptions}
+          </select>
+        </div>
+      </div>
 
-                                                                <div class="row mb-2">
-                                                                    <div class="col-4"><b>Note</b></div>
-                                                                    <div class="col">
-                                                                    <input id="note" class="form-control" value="${data.note || ""}">
-                                                                    </div>
-                                                                </div>
+      <div class="row mb-3 align-items-center">
+        <div class="col-4"><b>Note</b></div>
+        <div class="col">
+          <input id="note" class="form-control swal-input-custom" value="${data.note || ""}">
+        </div>
+      </div>
 
-                                                                <div class="row mb-2">
-                                                                    <div class="col-4"><b>Amount</b></div>
-                                                                    <div class="col">
-                                                                    <input id="amount" type="number" class="form-control" value="${data.expenseAmount}">
-                                                                    </div>
-                                                                </div>
+      <div class="row mb-3 align-items-center">
+        <div class="col-4"><b>Amount</b></div>
+        <div class="col">
+          <input id="amount" type="number" class="form-control swal-input-custom" value="${data.expenseAmount}">
+        </div>
+      </div>
 
-                                                                <div class="row mb-2">
-                                                                    <div class="col-4"><b>Date</b></div>
-                                                                    <div class="col">
-                                                                    <input id="date" type="date" class="form-control"
-                                                                        value="${new Date(data.expenseDate).toISOString().split("T")[0]}">
-                                                                    </div>
-                                                                </div>
-                                                                </div>
-                                                            `,
-                                                        showCancelButton: true,
-                                                        confirmButtonText: "Update",
-                                                        focusConfirm: false,
-                                                        preConfirm: () => {
-                                                            const categoryID = document.getElementById("category").value;
-                                                            const note = document.getElementById("note").value;
-                                                            const expenseAmount = document.getElementById("amount").value;
-                                                            const expenseDate = document.getElementById("date").value;
+      <div class="row mb-2 align-items-center">
+        <div class="col-4"><b>Date</b></div>
+        <div class="col">
+          <input
+            id="date"
+            type="date"
+            class="form-control swal-input-custom"
+            value="${new Date(data.expenseDate).toISOString().split("T")[0]}"
+          >
+        </div>
+      </div>
+    </div>
+  `,
+  showCancelButton: true,
+  confirmButtonText: "Update",
+  focusConfirm: false,
+  preConfirm: () => {
+    const categoryID = document.getElementById("category").value;
+    const note = document.getElementById("note").value;
+    const expenseAmount = document.getElementById("amount").value;
+    const expenseDate = document.getElementById("date").value;
 
-                                                            if (!categoryID || !note || !expenseAmount || !expenseDate) {
-                                                                Swal.showValidationMessage("Please fill all fields");
-                                                                return false;
-                                                            }
-                                                            return { categoryID, note, expenseAmount, expenseDate };
-                                                        },
-                                                    }).then(async (result) => {
+    if (!categoryID || !note || !expenseAmount || !expenseDate) {
+      Swal.showValidationMessage("Please fill all fields");
+      return false;
+    }
+
+    return { categoryID, note, expenseAmount, expenseDate };
+  },
+}).then(async (result) => {
 
                                                         if (!result.isConfirmed) return;
 
