@@ -62,15 +62,15 @@ function Expense() {
                         </h2>
                     </div>
                     <div className="col  d-flex justify-content-end me-1 align-items-center" >
-                        <Link to={`/main/addExpense`}>
-  <button
-    type="button"
-    className="btn btn-success add-expense-btn"
-  >
-    <i className="bi bi-plus-circle"></i>
-    <span className="add-btn-text ms-2">Add Expense</span>
-  </button>
-</Link>
+                        <Link to={`/main/addExpense`} style={{textDecoration:"none"}}>
+                            <button
+                                type="button"
+                                className="btn btn-success add-expense-btn"
+                            >
+                                <i className="bi bi-plus-circle"></i>
+                                <span className="add-btn-text ms-2">Add Expense</span>
+                            </button>
+                        </Link>
                     </div>
                 </div>
 
@@ -124,24 +124,24 @@ function Expense() {
                                                 title="Edit"
                                                 onClick={() => {
                                                     const categoryOptions = category.map(
-                                                            (cat) => `
+                                                        (cat) => `
                                                                 <option value="${cat.categoryID}" ${cat.categoryID === data.categoryID ? "selected" : ""}>
                                                                 ${cat.category}
                                                                 </option>`
-                                                        )
+                                                    )
                                                         .join("");
 
-           
+
                                                     Swal.fire({
-  title: "Edit Expense",
-  customClass: {
-    popup: "swal-popup",
-    title: "swal-title",
-    htmlContainer: "swal-html",
-    confirmButton: "swal-confirm-btn",
-    cancelButton: "swal-cancel-btn",
-  },
-  html: `
+                                                        title: "Edit Expense",
+                                                        customClass: {
+                                                            popup: "swal-popup",
+                                                            title: "swal-title",
+                                                            htmlContainer: "swal-html",
+                                                            confirmButton: "swal-confirm-btn",
+                                                            cancelButton: "swal-cancel-btn",
+                                                        },
+                                                        html: `
     <div class="container-fluid">
       <div class="row mb-3 align-items-center">
         <div class="col-4"><b>Category</b></div>
@@ -179,23 +179,23 @@ function Expense() {
       </div>
     </div>
   `,
-  showCancelButton: true,
-  confirmButtonText: "Update",
-  focusConfirm: false,
-  preConfirm: () => {
-    const categoryID = document.getElementById("category").value;
-    const note = document.getElementById("note").value;
-    const expenseAmount = document.getElementById("amount").value;
-    const expenseDate = document.getElementById("date").value;
+                                                        showCancelButton: true,
+                                                        confirmButtonText: "Update",
+                                                        focusConfirm: false,
+                                                        preConfirm: () => {
+                                                            const categoryID = document.getElementById("category").value;
+                                                            const note = document.getElementById("note").value;
+                                                            const expenseAmount = document.getElementById("amount").value;
+                                                            const expenseDate = document.getElementById("date").value;
 
-    if (!categoryID || !note || !expenseAmount || !expenseDate) {
-      Swal.showValidationMessage("Please fill all fields");
-      return false;
-    }
+                                                            if (!categoryID || !note || !expenseAmount || !expenseDate) {
+                                                                Swal.showValidationMessage("Please fill all fields");
+                                                                return false;
+                                                            }
 
-    return { categoryID, note, expenseAmount, expenseDate };
-  },
-}).then(async (result) => {
+                                                            return { categoryID, note, expenseAmount, expenseDate };
+                                                        },
+                                                    }).then(async (result) => {
 
                                                         if (!result.isConfirmed) return;
 

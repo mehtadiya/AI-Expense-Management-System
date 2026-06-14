@@ -24,6 +24,7 @@ import { AuthProvider } from './context/AuthProvider';
 import Reports from './components/repots';
 import Alerts from './components/alerts';
 import About from './components/about';
+import VoiceDrafts from './components/voiceDraft';
 
 
 
@@ -52,6 +53,7 @@ function App() {
             <Route path="/main/reports" element={<Reports/>}/>
             <Route path="/main/alerts" element={<Alerts/>}/>
             <Route path="/main/about" element={<About/>}/>
+            <Route path="/main/voice-drafts" element={<VoiceDrafts />} />
 
         </Route>
 

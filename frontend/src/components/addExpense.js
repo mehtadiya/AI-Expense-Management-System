@@ -8,6 +8,7 @@ import Scan from "./addScan";
 import RecordAudio from "./addAudio";
 import { useAuth } from "../context/AuthProvider";
 import "./addExpense.css"
+import VoiceDrafts from "./voiceDraft";
 
 function AddExpense() {
     const [selectedOption,setSelectedOption]=useState(null);
@@ -21,6 +22,7 @@ const userID=user?.userID;
     { title: "Add Online Payments", icon: "bi bi-credit-card-2-front-fill", color: "#ffc107" ,option:"Online"},
     { title: "Scan Receipt", icon: "bi bi-upc-scan", color: "#6f42c1" ,option:"Scan"},
     { title: "Record Audio", icon: "bi bi-mic-fill", color: "#dc3545",option:"Audio" },
+    { title: "Add Drafts", icon: "bi bi-file-earmark-plus", color: "#6c757d",option:"Drafts" },
   ];
 
   const renderComponent=()=>{
@@ -35,6 +37,8 @@ const userID=user?.userID;
             return <Scan userID={userID}/>
         case "Audio":
             return <RecordAudio />
+        case "Drafts":
+            return <VoiceDrafts />
         default:
             return <Manual />
     }
@@ -42,7 +46,7 @@ const userID=user?.userID;
 
   return (
     <div className="container-fluid py-3">
-      {/* Header */}                                        
+
       <div className="row mb-4">
         <div className="col-8">
           <h2 className="fw-bolder" style={{ color: "#0A382B" }}>
@@ -56,7 +60,6 @@ const userID=user?.userID;
         
       </div>
 
-        {/* Boxes*/}
       <div className="row mb-4 d-flex justify-content-between">
         {options.map((opt, index) => (
           <div className="col-lg-2 col-md-4 col-sm-6 expense-option-col" key={index}>

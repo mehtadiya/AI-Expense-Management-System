@@ -25,66 +25,7 @@ useEffect( () => {
 
     }, []);
 
-  // Edit category handler
-  const handleEdit = (data) => {
-     const iconOptions = icons
-    .map(
-      (icon) => `
-        <option 
-          value="${icon.iconID}" 
-          ${data.iconID === icon.iconID ? "selected" : ""}
-        >
-         ${icon.icon} 
-        </option>`
-    )
-    .join("");
-    Swal.fire({
-  title: "Edit Category",
-  width: window.innerWidth < 576 ? "95%" : "32rem",
-  padding: window.innerWidth < 576 ? "1rem" : "1.5rem",
-  customClass: {
-    popup: "rounded-4",
-  },
-  html: `
-    <div style="text-align:left;">
-      <div class="mb-3">
-        <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Category Name</label>
-        <input id="category" type="text" class="swal2-input" 
-          style="width:90%; margin:0;" 
-          value="${data.category}" 
-          placeholder="Enter category name" />
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Select Icon</label>
-        <select id="iconID" class="swal2-select" style="width:90%; margin:0;">
-          ${iconOptions}
-        </select>
-      </div>
-    </div>
-  `,
-  focusConfirm: false,
-  showCancelButton: true,
-  confirmButtonText: "Update",
-}).then(async (result) => {
-      if (result.isConfirmed) {
-        const updated = result.value;
-        await api.put(`categories/${data.categoryID}`,{
-          category:updated.category,
-          iconID:updated.iconID
-        })
-       
-          Swal.fire("Updated!", "Category updated successfully!", "success")
-          .then(() => window.location.reload())
-
-          .catch((err) => {
-            console.error("Error updating category:", err);
-            Swal.fire("Error", "Server error occurred", "error");
-          });
-      }
-    });
-  };
-
+  
   // Delete category 
   const handleDelete = (data) => {
     Swal.fire({
@@ -117,64 +58,147 @@ useEffect( () => {
     });
   };
 
- const handleAdd = () => {
-  const iconOptions = `
-  <option value="">-- Select an icon --</option>
-  ${icons
+ const handleEdit = (data) => {
+  const iconOptions = icons
     .map(
       (icon) => `
-        <option value="${icon.iconID}">
-          <i className="bi bi-eye">${icon.icon}</i>
+        <option
+          value="${icon.iconID}"
+          ${data.iconID === icon.iconID ? "selected" : ""}
+        >
+          ${icon.icon}
         </option>`
     )
-    .join("")}
-`;
+    .join("");
 
- Swal.fire({
-  title: "Add Category",
-  width: window.innerWidth < 576 ? "95%" : "32rem",
-  padding: window.innerWidth < 576 ? "1rem" : "1.5rem",
-  customClass: {
-    popup: "rounded-4",
-  },
-  html: `
-    <div style="text-align:left;">
-      <div class="mb-3">
-        <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Category Name</label>
-        <input id="category" type="text" class="swal2-input"
-          style="width:90%; margin:0;"
-          placeholder="Enter category name" />
-      </div>
+  Swal.fire({
+    title: "Edit Category",
+    width: window.innerWidth < 576 ? "95%" : "32rem",
+    padding: window.innerWidth < 576 ? "1rem" : "1.5rem",
+    customClass: {
+      popup: "rounded-4",
+    },
+    html: `
+      <div style="text-align:left;">
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">
+            Category Name
+          </label>
+          <input
+            id="category"
+            type="text"
+            class="swal2-input"
+            style="width:90%; margin:0;"
+            value="${data.category}"
+          />
+        </div>
 
-      <div class="mb-3">
-        <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">Select Icon</label>
-        <select id="iconID" class="swal2-select" style="width:90%; margin:0;">
-          ${iconOptions}
-        </select>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">
+            Select Icon
+          </label>
+          <select id="iconID" class="swal2-select" style="width:90%; margin:0;">
+            ${iconOptions}
+          </select>
+        </div>
       </div>
-    </div>
-  `,
-  focusConfirm: false,
-  showCancelButton: true,
-  confirmButtonText: "Add",
-}).then(async (result) => {
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: "Update",
+    preConfirm: () => ({
+      category: document.getElementById("category").value,
+      iconID: document.getElementById("iconID").value,
+    }),
+  }).then(async (result) => {
     if (result.isConfirmed) {
-
-      const newCategory = result.value;
-
-      await api.post(`categories/add`,{
-        category:newCategory.category,
-        iconID:newCategory.iconID
-      })
-      .then(() => {
-           Swal.fire("Added!", "Category added successfully!", "success").then(
-              () => window.location.reload()
-            );
-        })
-        .catch((err) => {
-          console.error("Error adding category:", err);
-          Swal.fire("Error", "Server error occurred", "error");
+      try {
+        await api.put(`categories/${data.categoryID}`, {
+          category: result.value.category,
+          iconID: result.value.iconID,
         });
+
+        Swal.fire(
+          "Updated!",
+          "Category updated successfully!",
+          "success"
+        ).then(() => window.location.reload());
+      } catch (err) {
+        console.error("Error updating category:", err);
+        Swal.fire("Error", "Server error occurred", "error");
+      }
+    }
+  });
+};
+const handleAdd = () => {
+  const iconOptions = `
+    <option value="">-- Select an icon --</option>
+    ${icons
+      .map(
+        (icon) => `
+          <option value="${icon.iconID}">
+            ${icon.icon}
+          </option>`
+      )
+      .join("")}
+  `;
+
+  Swal.fire({
+    title: "Add Category",
+    width: window.innerWidth < 576 ? "95%" : "32rem",
+    padding: window.innerWidth < 576 ? "1rem" : "1.5rem",
+    customClass: {
+      popup: "rounded-4",
+    },
+    html: `
+      <div style="text-align:left;">
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">
+            Category Name
+          </label>
+          <input
+            id="category"
+            type="text"
+            class="swal2-input"
+            style="width:90%; margin:0;"
+            placeholder="Enter category name"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="display:block; margin-bottom:5px;">
+            Select Icon
+          </label>
+          <select id="iconID" class="swal2-select" style="width:90%; margin:0;">
+            ${iconOptions}
+          </select>
+        </div>
+      </div>
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: "Add",
+    preConfirm: () => ({
+      category: document.getElementById("category").value,
+      iconID: document.getElementById("iconID").value,
+    }),
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await api.post("categories/add", {
+          category: result.value.category,
+          iconID: result.value.iconID,
+        });
+
+        Swal.fire(
+          "Added!",
+          "Category added successfully!",
+          "success"
+        ).then(() => window.location.reload());
+      } catch (err) {
+        console.error("Error adding category:", err);
+        Swal.fire("Error", "Server error occurred", "error");
+      }
     }
   });
 };

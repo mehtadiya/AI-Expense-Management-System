@@ -14,6 +14,7 @@ function LoginPage() {
     email: "",
     password: "",
   });
+  const [isVisible,setisVisible]=useState(false);
 
   const [error, setError] = useState("");
 
@@ -64,10 +65,10 @@ function LoginPage() {
             />
           </div>
 
-          <div className="mb-3">
+          <div className="mb-3" style={{position:"relative",width:"100%"}}>
             <label className="form-label">Password</label>
             <input
-              type="password"
+              type={isVisible ?"text" :"password" }
               name="password"
               className="form-control shadow-sm"
               placeholder="Enter your password"
@@ -75,6 +76,7 @@ function LoginPage() {
               onChange={handleChange}
               required
             />
+            <span><i className={isVisible ? "bi bi-eye-slash" :"bi bi-eye"} style={{position:"absolute",top:"50%",right:"3%"}} onClick={()=>setisVisible(!isVisible)}></i></span>
           </div>
 
           {error && (

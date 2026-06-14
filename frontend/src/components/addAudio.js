@@ -30,18 +30,16 @@ function RecordAudio() {
       formData.append("file", audioBlob, "voice.webm");
 
 
-
-
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.post(`${API_URL}/voice`, formData, {
+        const res = await axios.post(`${API_URL}/voice-v2`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
-
-        const { intent, data, transcript: userText } = res.data;
+        console.log("VOICE RESPONSE:", res.data);
+        const { action, data, transcript: userText } = res.data;
         setTranscript(userText || "");
 
-        const normalizedIntent = intent?.toUpperCase();
+        const normalizedIntent = action?.toUpperCase();
 
 
         if (normalizedIntent === "ERROR" && data?.error) {
@@ -50,11 +48,11 @@ function RecordAudio() {
         else if (normalizedIntent === "GET_EXPENSES") {
           navigate("/main/expenses");
         }
-        else if (normalizedIntent === "ADD_EXPENSE") {
-          navigate("/main/manual", { state: { voiceData: data } });
-        }
-        else if (normalizedIntent === "ADD_MULTIPLE") {
-          navigate("/main/multiple", { state: { voiceData: data } });
+        else if (
+          normalizedIntent === "ADD_EXPENSE" ||
+          normalizedIntent === "ADD_MULTIPLE"
+        ) {
+          navigate("/main/voice-drafts");
         }
         else {
           alert("Command not recognized. Speak clearly.");
@@ -81,7 +79,7 @@ function RecordAudio() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h2 style={styles.title}>🎤 Voice Expense Manager</h2>
+        <h2 style={styles.title}> Voice Expense Manager</h2>
 
         <button
           onClick={isRecording ? stopRecording : startRecording}

@@ -25,13 +25,13 @@ function Main() {
       <div className="main-header shadow-sm fixed-top-header">
         <div className="row g-0 align-items-center px-3 py-2">
 
-          <div className="col-3 col-md-2 d-flex align-items-center">
+          <div className="col-2 col-md-1 d-flex align-items-center ">
             <h4 className="fw-bold mb-0 app-title d-flex align-items-center gap-2">
               <img src="/spending.png" alt="logo" width={35} />
             </h4>
           </div>
 
-          <div className="col d-flex align-items-center">
+          <div className="col d-flex align-items-center " style={{paddingLeft:"5%"}}>
             <h4 className="fw-bold mb-0 welcome-text" style={{ color: "#006400" }}>
               Hello,{" "}
               <span className="fw-bold">

@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../api/api";
-import { useLocation } from "react-router-dom";
 
 function Multiple() {
   const location = useLocation();
@@ -10,227 +9,170 @@ function Multiple() {
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
 
-  const defaultRow = { categoryID: "", note: "", expenseAmount: "", expenseDate: new Date().toISOString().split("T")[0] };
-  const [forms, setForms] = useState(Array(3).fill().map(() => ({ ...defaultRow })));
+  const defaultRow = {
+    categoryID: "",
+    note: "",
+    expenseAmount: "",
+    expenseDate: new Date().toISOString().split("T")[0],
+  };
 
-  // Fetch categories
+  const [forms, setForms] = useState(
+    Array(3).fill().map(() => ({ ...defaultRow }))
+  );
 
   useEffect(() => {
-  api.get("/categories")
-    .then(res => {
-      setCategories(res.data);
+    api.get("/categories")
+      .then((res) => {
+        setCategories(res.data);
 
-      if (voiceData.length > 0) {
+        if (voiceData.length > 0) {
+  const rows = voiceData.map((v) => {
+    const cat = res.data.find(
+      (c) =>
+        c.category.toLowerCase() === v.category.toLowerCase()
+    );
 
-        const rows = voiceData.map(v => {
+    return {
+      categoryID: cat ? cat.categoryID : v.categoryID,
+      note: v.note || "",
+      expenseAmount: v.expenseAmount || v.expenseamount || "",
+      expenseDate:
+        (v.expenseDate || v.expensedate)?.split("T")[0] ||
+        new Date().toISOString().split("T")[0],
+    };
+  });
 
-          const cat = res.data.find(
-            c => c.category.toLowerCase() === v.category.toLowerCase()
-          );
-
-          return {
-            categoryID: cat ? cat.categoryID : "",
-            note: v.category,
-            expenseAmount: v.amount,
-            expenseDate: new Date().toISOString().split("T")[0]
-          };
-
-        });
-
-        setForms(rows);
-      }
-
-    })
-    .catch((err) => console.error("Error fetching categories:", err));
-}, []);
+  setForms(rows);
+}
+      })
+      .catch((err) => console.error(err));
+  }, [voiceData]);
 
   const handleChange = (e, index) => {
     const { name, value } = e.target;
-    const updatedForms = [...forms];
-    updatedForms[index][name] = value;
-    setForms(updatedForms);
+    const updated = [...forms];
+    updated[index][name] = value;
+    setForms(updated);
   };
 
-  // Add a new empty row
   const handleAddRow = () => {
     setForms([...forms, { ...defaultRow }]);
   };
 
-  //  Delete a row
   const handleDeleteRow = (index) => {
-    const updated = forms.filter((_, i) => i !== index); //keep all except the one to delete
-    setForms(updated);
+    setForms(forms.filter((_, i) => i !== index));
   };
-
 
   const handleSubmit = async () => {
     try {
-      const validExpenses = forms.filter((row) =>
-        row.categoryID &&
-        row.note &&
-        row.expenseAmount &&
-        row.expenseDate
+      const validExpenses = forms.filter(
+        (r) =>
+          r.categoryID &&
+          r.note &&
+          r.expenseAmount &&
+          r.expenseDate
       );
+
       if (validExpenses.length === 0) {
-        Swal.fire({
-        icon:  "warning",
-        title:  "Warning",
-        text:  "Please fill at least one expense row",
-        confirmButtonColor: "#f0ad4e",
-        confirmButtonText: "OK"
-      });
+        Swal.fire("Warning", "Please fill at least one expense row", "warning");
         return;
       }
 
-
-      await api.post("/expenses/add-multiple", { expenses: validExpenses }).then(res => setForms(res.data))
-
-
-      Swal.fire({
-        icon: "success",
-        title: "Expenses Added!",
-        text: " All expenses have been added successfully.",
-        confirmButtonColor: "#3085d6",
-        confirmButtonText: "OK",
-      }).then(() => {
-        navigate(`/main/expenses`); // navigate after clicking OK
+      await api.post("/expenses/add-multiple", {
+        expenses: validExpenses,
       });
 
-
-
-
-    } catch (error) {
-      Swal.fire(
-        "Error",
-        error.response?.data?.message || "Failed to add expenses",
-        "error"
-      );
+      Swal.fire("Success", "Expenses Added!", "success").then(() => {
+        navigate("/main/expenses");
+      });
+    } catch (err) {
+      Swal.fire("Error", "Failed to add expenses", "error");
     }
   };
 
   return (
-    <div
-      className="container-fluid p-2 m-2"
-      style={{
-        background: "#F0FFF0",
-        borderRadius: "20px",
-        width: "99%",
-      }}
-    >
-      <h3 className="text-center mb-4 fw-bold" style={{ color: "#0A382B" }}>
-        Add Multiple Expenses
-      </h3>
+    <div className="container-fluid p-2 m-2">
+      <h3 className="text-center mb-4">Add Multiple Expenses</h3>
 
       <div className="table-responsive">
-        <table className="table table-bordered align-middle text-center shadow-sm">
-          <thead
-            style={{
-              backgroundColor: "#198754",
-              color: "white",
-              borderRadius: "12px",
-            }}
-          >
+        <table className="table table-bordered text-center">
+          <thead>
             <tr>
-              <th style={{ width: "25%" }}>Category</th>
-              <th style={{ width: "25%" }}>Note</th>
-              <th style={{ width: "20%" }}>Amount (₹)</th>
-              <th style={{ width: "20%" }}>Date</th>
-              <th style={{ width: "10%" }}>Action</th>
+              <th>Category</th>
+              <th>Note</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Action</th>
             </tr>
           </thead>
+
           <tbody>
-            {forms.length > 0 ? (
-              forms.map((form, i) => (
-                <tr key={i}>
-                  <td>
-                    <select
-                      name="categoryID"
-                      value={form.categoryID}
-                      onChange={(e) => handleChange(e, i)}
-                      className="form-select border-0 shadow-sm bg-light"
-                    >
-                      <option value="">Select</option>
-                      {categories.length > 0 ? (
-                        categories.map((data) => (
-                          <option key={data.categoryID} value={data.categoryID}>
-                            {data.category}
-                          </option>
-                        ))
-                      ) : (
-                        <p>No result found</p>
-                      )}
+            {forms.map((form, i) => (
+              <tr key={i}>
+                <td>
+                  <select
+                    name="categoryID"
+                    value={form.categoryID}
+                    onChange={(e) => handleChange(e, i)}
+                    className="form-select"
+                  >
+                    <option value="">Select</option>
+                    {categories.map((c) => (
+                      <option key={c.categoryID} value={c.categoryID}>
+                        {c.category}
+                      </option>
+                    ))}
+                  </select>
+                </td>
 
-                    </select>
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      name="note"
-                      value={form.note}
-                      onChange={(e) => handleChange(e, i)}
-                      className="form-control border-0 shadow-sm bg-light"
-                      placeholder="Note"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      name="expenseAmount"
-                      value={form.expenseAmount}
-                      onChange={(e) => handleChange(e, i)}
-                      className="form-control border-0 shadow-sm bg-light"
-                      placeholder="Amount"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="date"
-                      name="expenseDate"
-                      value={form.expenseDate}
-                      onChange={(e) => handleChange(e, i)}
-                      className="form-control border-0 shadow-sm bg-light"
-                    />
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-outline-danger btn-sm rounded-circle"
-                      title="Delete Row"
-                      onClick={() => handleDeleteRow(i)}
-                    >
-                      <i className="bi bi-trash-fill"></i>
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <p>No results found</p>
-            )}
+                <td>
+                  <input
+                    name="note"
+                    value={form.note}
+                    onChange={(e) => handleChange(e, i)}
+                    className="form-control"
+                  />
+                </td>
 
+                <td>
+                  <input
+                    name="expenseAmount"
+                    value={form.expenseAmount}
+                    onChange={(e) => handleChange(e, i)}
+                    className="form-control"
+                  />
+                </td>
+
+                <td>
+                  <input
+                    type="date"
+                    name="expenseDate"
+                    value={form.expenseDate}
+                    onChange={(e) => handleChange(e, i)}
+                    className="form-control"
+                  />
+                </td>
+
+                <td>
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => handleDeleteRow(i)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
-      <div className="d-flex justify-content-between mt-4">
-        <button
-          onClick={handleAddRow}
-          className="btn btn-outline-success d-flex align-items-center"
-          style={{
-            borderRadius: "12px",
-            fontWeight: "600",
-            boxShadow: "0 4px 15px rgba(72, 187, 120, 0.3)",
-          }}
-        >
-          <i className="bi bi-plus-circle me-2"></i> Add Row
+      <div className="d-flex justify-content-between mt-3">
+        <button className="btn btn-outline-success" onClick={handleAddRow}>
+          Add Row
         </button>
 
-        <button
-          className="btn btn-success px-4 py-2 fw-semibold"
-          onClick={handleSubmit}
-          style={{
-            borderRadius: "12px",
-            boxShadow: "0 4px 15px rgba(72, 187, 120, 0.3)",
-          }}
-        >
+        <button className="btn btn-success" onClick={handleSubmit}>
           Add All
         </button>
       </div>
@@ -239,5 +181,3 @@ function Multiple() {
 }
 
 export default Multiple;
-
-
