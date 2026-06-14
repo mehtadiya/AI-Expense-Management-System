@@ -29,7 +29,6 @@ router.get('/budgets', verifyToken, async (req, res) => {
         `, [userID]);
 
         res.json(result.rows);
-
     } catch (error) {
         console.log("error", error);
         res.status(500).send("error in fetching categories having budget");
@@ -49,10 +48,56 @@ router.get('/budgets/totalExpense/:userID', async (req, res) => {
         `, [userID]);
 
         res.json(result.rows);
-
     } catch (error) {
         console.log("error", error);
         res.status(500).send("error fetching total expense");
+    }
+});
+
+router.post("/budget-rollover/action", verifyToken, async (req, res) => {
+    try {
+        const {
+            budgetid,
+            fromdate,
+            todate,
+            remainingamount,
+            action
+        } = req.body;
+
+        const userID = req.user.userID;
+
+        // ❗ HARD VALIDATION (prevents your DB crash)
+        if (
+            !budgetid ||
+            !fromdate ||
+            !todate ||
+            remainingamount == null ||
+            !action
+        ) {
+            return res.status(400).json({
+                message: "Missing rollover data"
+            });
+        }
+
+        // Insert rollover safely
+        await pool.query(`
+            INSERT INTO budget_rollover
+            (userid, budgetid, fromdate, todate, remainingamount, action)
+            VALUES ($1, $2, $3, $4, $5, $6)
+        `, [
+            userID,
+            budgetid,
+            fromdate,
+            todate,
+            remainingamount,
+            action
+        ]);
+
+        res.json({ message: "Rollover saved successfully" });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Server error" });
     }
 });
 
@@ -60,57 +105,25 @@ router.get('/budgets/totalExpense/:userID', async (req, res) => {
 router.post("/budgets/add", verifyToken, async (req, res) => {
     try {
         const { fromDate, toDate, categoryID, amountLimit } = req.body;
-
-        if (!fromDate || !toDate || !amountLimit) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-
         const userID = req.user.userID;
 
-        if (categoryID === null) {
-
-            const totalCheck = await pool.query(`
-                SELECT 1
-                FROM budget
-                WHERE categoryid IS NULL
-                AND $1 <= todate
-                AND $2 >= fromdate
-                AND userid = $3
-            `, [fromDate, toDate, userID]);
-
-            if (totalCheck.rows.length > 0) {
-                return res.status(409).json({
-                    message: "Total budget already exists for this date range"
-                });
-            }
-
-            const sumResult = await pool.query(`
-                SELECT COALESCE(SUM(amountlimit), 0) AS total
-                FROM budget
-                WHERE categoryid IS NOT NULL
-                AND $1 <= todate
-                AND $2 >= fromdate
-                AND userid = $3
-            `, [fromDate, toDate, userID]);
-
-            const categorySum = parseFloat(sumResult.rows[0].total);
-
-            if (categorySum > 0 && categorySum !== parseFloat(amountLimit)) {
-                return res.status(400).json({
-                    message: `Total budget must equal sum of category budgets (${categorySum})`
-                });
-            }
+        if (!userID || !fromDate || !toDate || amountLimit == null) {
+            return res.status(400).json({ message: "Missing fields" });
         }
 
-        await pool.query(`
+        const result = await pool.query(`
             INSERT INTO budget (userid, fromdate, todate, categoryid, amountlimit)
             VALUES ($1, $2, $3, $4, $5)
+            RETURNING budgetid
         `, [userID, fromDate, toDate, categoryID, amountLimit]);
 
-        res.status(201).json({ message: "Budget added successfully" });
+        res.status(201).json({
+            message: "Budget created",
+            budgetId: result.rows[0].budgetid
+        });
 
     } catch (err) {
-        console.error(err);
+        console.log(err);
         res.status(500).json({ message: "Server error" });
     }
 });
@@ -204,6 +217,19 @@ router.post("/budgets/addCategoryWise", verifyToken, async (req, res) => {
                         : `Category budgets exceeded total budget by ₹${Math.abs(remaining)}`
             });
         }
+        if (totalBudget === null) {
+
+            await client.query(`
+        INSERT INTO budget
+        (userid, fromdate, todate, categoryid, amountlimit)
+        VALUES ($1, $2, $3, NULL, $4)
+    `, [
+                userID,
+                fromDate,
+                toDate,
+                currentSum
+            ]);
+        }
         await client.query("COMMIT");
 
         res.status(201).json({
@@ -219,6 +245,63 @@ router.post("/budgets/addCategoryWise", verifyToken, async (req, res) => {
     }
 });
 
+router.get("/budget-remaining/:userID", verifyToken, async (req, res) => {
+    try {
+        const userID = req.params.userID;
+
+       const budgetRes = await pool.query(`
+    SELECT budgetid, amountlimit, fromdate, todate
+    FROM budget
+    WHERE userid = $1
+      AND categoryid IS NULL
+      AND CURRENT_DATE BETWEEN fromdate AND todate
+    ORDER BY fromdate DESC
+    LIMIT 1
+`, [userID]);
+
+        if (budgetRes.rows.length === 0) {
+            return res.json({
+                remaining: 0,
+                spent: 0,
+                budget: 0,
+                budgetid: null,
+                fromdate: null,
+                todate: null
+            });
+        }
+
+        const budget = budgetRes.rows[0];
+
+        // 2. FIXED: Proper expense calculation
+        const expenseRes = await pool.query(`
+            SELECT COALESCE(SUM(expenseamount), 0) AS spent
+            FROM expense
+            WHERE userid = $1
+              AND expensedate >= $2
+              AND expensedate <= $3
+        `, [
+            userID,
+            budget.fromdate,
+            budget.todate
+        ]);
+
+        const spent = Number(expenseRes.rows[0].spent || 0);
+        const remaining = Number(budget.amountlimit) - spent;
+
+        return res.json({
+            remaining: remaining > 0 ? remaining : 0,
+            spent,
+            budget: budget.amountlimit,
+            budgetid: budget.budgetid,
+            fromdate: budget.fromdate,
+            todate: budget.todate
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "error" });
+    }
+});
 
 //get duration
 router.get('/duration', verifyToken, async (req, res) => {

@@ -138,6 +138,7 @@ router.put("/categories/:categoryID", verifyToken, async (req, res) => {
 router.post("/categories/add", verifyToken, async (req, res) => {
     try {
         const userID = req.user.userID;
+        
         const { category, iconID } = req.body;
         const result = await pool.query(`
             INSERT INTO category (category, userid, iconid)
