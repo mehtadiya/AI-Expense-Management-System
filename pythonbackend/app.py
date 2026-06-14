@@ -1,8 +1,7 @@
+
 from fastapi import FastAPI, UploadFile, File, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from chatbot.chatbot import detect_intent
-from chatbot.intent_parser import execute_intent
 from faster_whisper import WhisperModel
 import tempfile, os
 from dotenv import load_dotenv
@@ -10,6 +9,19 @@ import requests
 import re
 import datetime
 import subprocess
+from ai.groq_agent import ask_agent
+from ai.memory import save_memory, get_memory
+import tempfile
+import subprocess
+import json
+from ai.tools import (
+    get_expenses,
+    get_categories,
+    get_budgets
+)
+from ai.tools import get_categories
+from ai.groq_agent import ask_receipt_agent
+import easyocr
 
 app = FastAPI()
 
@@ -22,7 +34,6 @@ app.add_middleware(
 )
 
 model = None
-
 load_dotenv()
 
 NODE_API = os.getenv("NODE_API")
@@ -33,255 +44,510 @@ def get_model():
         model = WhisperModel("tiny", device="cpu", compute_type="int8")
     return model
 
-def extract_date(text: str):
-    text = text.lower()
-    today = datetime.datetime.now()
 
-    if "day before yesterday" in text:
-        return (today - datetime.timedelta(days=2)).strftime("%Y-%m-%d")
-
-    if "yesterday" in text:
-        return (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-
-    if "today" in text:
-        return today.strftime("%Y-%m-%d")
-
-    match = re.search(r'(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})', text)
-    if match:
-        d, m, y = match.groups()
-        y = int("20" + y) if len(y) == 2 else int(y)
-        try:
-            return datetime.datetime(y, int(m), int(d)).strftime("%Y-%m-%d")
-        except:
-            pass
-
-    return today.strftime("%Y-%m-%d")
+MONTHS = {
+    "january": 1,
+    "february": 2,
+    "march": 3,
+    "april": 4,
+    "may": 5,
+    "june": 6,
+    "july": 7,
+    "august": 8,
+    "september": 9,
+    "october": 10,
+    "november": 11,
+    "december": 12
+}
 
 class ChatRequest(BaseModel):
     message: str
 
-def get_user_categories(token: str):
+
+
+reader = easyocr.Reader(
+    ['en'],
+    gpu=False
+)
+
+def extract_text_from_image(image_path):
+    result = reader.readtext(
+    image_path,
+    detail=0,
+    paragraph=False
+    )
+
+    return "\n".join(result)
+
+
+def normalize(text: str):
+    return text.lower().strip()
+
+
+def safe_json_loads(text):
     try:
-        res = requests.get(
-            f"{NODE_API}/categories",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        return res.json()
+        return json.loads(text)
     except:
-        return []
+        try:
+            start = text.find("{")
+            end = text.rfind("}") + 1
+            return json.loads(text[start:end])
+        except:
+            return None
 
-def parse_expense_command(cmd: str, user_categories: list):
-    cmd_lower = cmd.lower()
 
-    amount_match = re.search(r'(?:₹|rs\.?\s*)?(\d+(?:\.\d+)?)', cmd_lower)
-    amount = float(amount_match.group(1)) if amount_match else None
-
-    note_match = re.search(r'(?:for|in|on)\s+([a-zA-Z0-9\s]+)', cmd_lower)
-    note = note_match.group(1).strip() if note_match else "general"
-
-    cmd_clean = re.sub(r'[^a-z0-9]', ' ', cmd_lower)
-
-    matched_category = None
-
-    for cat in user_categories:
-        cat_clean = re.sub(r'[^a-z0-9]', ' ', cat["category"].lower())
-        if all(word in cmd_clean for word in cat_clean.split()):
-            matched_category = cat
-            break
-
-    if not matched_category:
-        for cat in user_categories:
-            cat_clean = re.sub(r'[^a-z0-9]', ' ', cat["category"].lower())
-            if any(word in cmd_clean for word in cat_clean.split()):
-                matched_category = cat
-                break
-
-    if not matched_category:
-        keyword_map = {
-            "food": ["food", "dining", "restaurant", "lunch", "dinner"],
-            "transport": ["travel", "uber", "bus"],
-            "shopping": ["shopping", "mall", "clothes"]
-        }
-
-        for cat in user_categories:
-            name = cat["category"].lower()
-            for key, words in keyword_map.items():
-                if key in name and any(w in cmd_clean for w in words):
-                    matched_category = cat
-                    break
-            if matched_category:
-                break
-
-    return {
-        "amount": amount,
-        "note": note,
-        "categoryID": matched_category["categoryID"] if matched_category else None,
-        "category": matched_category["category"] if matched_category else "other"
-    }
-
-@app.post("/chat")
-async def chat_command(req: ChatRequest, authorization: str = Header(None)):
+@app.post("/chat-v2")
+async def chat_v2(req: ChatRequest, authorization: str = Header(None)):
     try:
-        text = req.message.strip().lower()
+        token = authorization.split(" ")[1]
+        user_id = token
 
-        token = authorization.split(" ")[1] if authorization else None
-        categories = get_user_categories(token)
+        memory = get_memory(user_id)
+        response = ask_agent(req.message, memory)
 
-        intent = detect_intent(text)
+        data = safe_json_loads(response)
 
-        if "category" in text or "categories" in text:
-            intent = "COUNT_CATEGORIES"
+        if not data:
+            data = {"type": "CHAT", "reply": response}
 
-        elif "how many" in text or "count" in text:
-            intent = "COUNT_EXPENSES"
+        action = data.get("type") or "CHAT"
 
-        elif "how much" in text or "total" in text or "spent" in text:
-            intent = "TOTAL_EXPENSE"
+        if action == "GET_EXPENSES":
+            expenses = get_expenses(token) or []
 
-        elif "show" in text or "list" in text or "give" in text:
-            intent = "GET_EXPENSES"
+            msg = req.message.lower()
 
-        if intent == "COUNT_CATEGORIES":
-            return {"reply": f"You have {len(categories)} categories"}
+            def parse_date(e):
+                try:
+                    return datetime.datetime.fromisoformat(
+                        e.get("expenseDate", "1970-01-01")
+                    )
+                except:
+                    return datetime.datetime(1970, 1, 1)
 
-        expenses = []
-        if intent in ["GET_EXPENSES", "COUNT_EXPENSES", "TOTAL_EXPENSE"]:
-            expenses = requests.get(
-                f"{NODE_API}/expenses",
-                headers={"Authorization": f"Bearer {token}"}
-            ).json()
+            if "how many" in msg or "count" in msg:
+                reply = f"You have {len(expenses)} expenses"
 
-        if intent == "GET_EXPENSES":
-            if not expenses:
-                return {"reply": "No expenses found"}
+            elif "latest" in msg or "last" in msg:
+                e = max(expenses, key=parse_date) if expenses else None
+                reply = (
+                    f"Latest expense: ₹{e['expenseAmount']} - "
+                    f"{e['category']} - {e['note']}"
+                ) if e else "No expenses found"
 
-            msg = "Your Expenses:\n\n"
-            for e in expenses:
-                msg += f"• ₹{e['expenseAmount']} - {e.get('note','')} ({e.get('category','')})\n"
+            elif "highest" in msg or "max" in msg:
+                e = max(
+                    expenses,
+                    key=lambda x: float(x.get("expenseAmount", 0))
+                ) if expenses else None
 
-            return {"reply": msg}
+                reply = (
+                    f"Highest expense: ₹{e['expenseAmount']} - "
+                    f"{e['category']} - {e['note']}"
+                ) if e else "No expenses found"
 
-        if intent == "COUNT_EXPENSES":
-            return {"reply": f"You have {len(expenses)} expenses"}
+            else:
+                reply = "Your expenses:\n\n"
 
-        if intent == "TOTAL_EXPENSE":
-            total = sum(float(e.get("expenseAmount", 0)) for e in expenses)
+                for e in expenses[:20]:
+                    reply += (
+                        f"₹{e['expenseAmount']} - "
+                        f"{e['category']} - "
+                        f"{e['note']}\n"
+                    )
 
-            for cat in categories:
-                if cat["category"].lower() in text:
-                    filtered = [
-                        e for e in expenses
-                        if e.get("category", "").lower() == cat["category"].lower()
-                    ]
-                    total = sum(float(e.get("expenseAmount", 0)) for e in filtered)
-                    return {"reply": f"You spent ₹{total} on {cat['category']}"}
+            save_memory(user_id, "user", req.message)
+            save_memory(user_id, "assistant", reply)
 
-            return {"reply": f"Total spending is ₹{total}"}
+            return {"reply": reply}
 
-        if intent == "ADD_EXPENSE":
-            parsed = parse_expense_command(text, categories)
+        if action == "GET_CATEGORIES":
+            categories = get_categories(token) or []
 
-            if parsed["amount"] is None:
-                return {"reply": "Please mention amount"}
+            if (
+                "how many" in req.message.lower()
+                or "count" in req.message.lower()
+            ):
+                reply = f"You have {len(categories)} categories"
+            else:
+                reply = "Your Categories:\n\n"
 
-            expense_date = extract_date(text)
+                for c in categories:
+                    reply += f"{c['category']}\n"
 
-            response = requests.post(
+            save_memory(user_id, "user", req.message)
+            save_memory(user_id, "assistant", reply)
+
+            return {"reply": reply}
+
+        if action == "GET_BUDGET":
+
+            budgets = get_budgets(token) or []
+
+            msg = req.message.lower()
+
+            target_month = None
+
+            for month_name, month_num in MONTHS.items():
+                if month_name in msg:
+                    target_month = month_num
+                    break
+
+            if target_month is None:
+                target_month = datetime.datetime.now().month
+
+            
+
+            total_budget = None
+            category_budgets = []
+
+            for b in budgets:
+
+                from_date = b.get("fromDate")
+                to_date = b.get("toDate")
+
+                if not from_date or not to_date:
+                    continue
+
+                try:
+                    end = datetime.datetime.fromisoformat(
+                        str(to_date).replace("Z", "+00:00")
+                    )
+                except:
+                    continue
+
+                if end.month != target_month:
+                    continue
+
+                amount = float(b.get("amountLimit") or 0)
+
+                if b.get("categoryID") is None:
+                    total_budget = amount
+                else:
+                    category_budgets.append({
+                        "category": b["category"],
+                        "amount": amount
+                    })
+
+
+            month_name = datetime.date(
+                1900,
+                target_month,
+                1
+            ).strftime("%B")
+
+            if total_budget is not None:
+
+                reply = (
+                    f"Your total budget for "
+                    f"{month_name} is ₹{total_budget:.0f}"
+                )
+
+            elif category_budgets:
+
+                total_category_budget = sum(
+                    item["amount"] for item in category_budgets
+                )
+
+                reply = (
+                    f"Your total budget for "
+                    f"{month_name} is ₹{total_category_budget:.0f}\n\n"
+                    f"Category-wise budgets:\n"
+                )
+
+                for item in category_budgets:
+                    reply += (
+                        f"• {item['category']}: "
+                        f"₹{item['amount']:.0f}\n"
+                    )
+
+            else:
+
+                reply = (
+                    f"You don't have any budget set for "
+                    f"{month_name}"
+                )
+
+            save_memory(user_id, "user", req.message)
+            save_memory(user_id, "assistant", reply)
+
+            return {"reply": reply}
+        if action == "ADD_EXPENSE":
+            categories = get_categories(token) or []
+
+            amount = data.get("data", {}).get("amount")
+            note = data.get("data", {}).get("note", "general")
+            ai_category = (
+                data.get("data", {}).get("category") or ""
+            ).lower()
+
+            category_id = None
+
+            for c in categories:
+                db_cat = c["category"].lower()
+
+                if ai_category in db_cat or db_cat in ai_category:
+                    category_id = c["categoryID"]
+                    break
+
+            if not category_id:
+                reply = "Category not found"
+
+                save_memory(user_id, "user", req.message)
+                save_memory(user_id, "assistant", reply)
+
+                return {"reply": reply}
+
+            requests.post(
                 f"{NODE_API}/expenses/add",
                 json={
-                    "expenseAmount": parsed["amount"],
-                    "note": parsed["note"],
-                    "categoryID": parsed["categoryID"],
-                    "expenseDate": expense_date
+                    "expenseAmount": amount,
+                    "note": note,
+                    "categoryID": category_id,
+                    "expenseDate": datetime.datetime.now().strftime(
+                        "%Y-%m-%d"
+                    )
                 },
-                headers={"Authorization": f"Bearer {token}"}
+                headers={
+                    "Authorization": f"Bearer {token}"
+                }
+            )
+
+            reply = f"Added ₹{amount} to {ai_category}"
+
+            save_memory(user_id, "user", req.message)
+            save_memory(user_id, "assistant", reply)
+
+            return {"reply": reply}
+        
+        if action == "ADD_CATEGORY":
+
+            category_name = (
+                data.get("data", {})
+                .get("category", "")
+                .strip()
+            )
+
+            if not category_name:
+                return {
+                    "reply": "Please provide category name"
+                }
+
+            categories = get_categories(token) or []
+
+            for c in categories:
+                if c["category"].lower() == category_name.lower():
+
+                    reply = (
+                        f"Category '{category_name}' "
+                        f"already exists"
+                    )
+
+                    save_memory(user_id, "user", req.message)
+                    save_memory(user_id, "assistant", reply)
+
+                    return {"reply": reply}
+
+            icons = requests.get(
+                f"{NODE_API}/icons",
+                headers={
+                    "Authorization": f"Bearer {token}"
+                }
+            ).json()
+
+            default_icon_id = (
+                icons[0]["iconID"]
+                if icons else 1
+            )
+
+            response = requests.post(
+                f"{NODE_API}/categories/add",
+                json={
+                    "category": category_name,
+                    "iconID": default_icon_id
+                },
+                headers={
+                    "Authorization": f"Bearer {token}"
+                }
             )
 
             if response.status_code in [200, 201]:
-                return {"reply": f"Added ₹{parsed['amount']} to {parsed['category']}"}
+                reply = (
+                    f"Category '{category_name}' "
+                    f"added successfully"
+                )
+            else:
+                try:
+                    reply = response.json().get(
+                        "message",
+                        "Failed to add category"
+                    )
+                except:
+                    reply = "Failed to add category"
 
-            return {"reply": "Failed to save expense"}
+            save_memory(user_id, "user", req.message)
+            save_memory(user_id, "assistant", reply)
 
-        return {"reply": "I didn’t understand"}
+            return {"reply": reply}
+        reply = data.get("reply") or "OK"
+
+        save_memory(user_id, "user", req.message)
+        save_memory(user_id, "assistant", reply)
+
+        return {"reply": reply}
 
     except Exception as e:
         return {"reply": str(e)}
 
-@app.post("/voice")
-async def voice_input(file: UploadFile = File(...), authorization: str = Header(None)):
+
+@app.post("/voice-v2")
+async def voice_v2(
+    file: UploadFile = File(...),
+    authorization: str = Header(None)
+):
     tmp_path = None
     wav_path = None
 
     try:
-        suffix = ".webm"
+        token = authorization.split(" ")[1]
 
-        if file.filename:
-            ext = os.path.splitext(file.filename)[1]
-            if ext:
-                suffix = ext
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
             contents = await file.read()
             tmp.write(contents)
             tmp_path = tmp.name
 
         wav_path = tmp_path + ".wav"
 
-        ffmpeg_result = subprocess.run(
+        subprocess.run(
             ["ffmpeg", "-y", "-i", tmp_path, "-ar", "16000", "-ac", "1", wav_path],
-            capture_output=True,
-            text=True
+            capture_output=True
         )
 
-        if ffmpeg_result.returncode != 0:
-            return {
-                "transcript": "",
-                "intent": "ERROR",
-                "data": {"error": ffmpeg_result.stderr}
-            }
-
         model = get_model()
-        segments, info = model.transcribe(wav_path, language="en")
+        segments, _ = model.transcribe(wav_path, language="en")
 
-        text = " ".join([segment.text for segment in segments]).strip()
+        transcript = " ".join(segment.text for segment in segments).strip()
 
-        if not text:
-            return {
-                "transcript": "",
-                "intent": "ERROR",
-                "data": {"error": "No speech detected"}
+        if not transcript:
+            return {"transcript": "", "action": "ERROR"}
+
+        memory = get_memory(token)
+        response = ask_agent(transcript, memory)
+
+        data = safe_json_loads(response)
+
+        if not data:
+            data = {"type": "CHAT", "reply": response}
+
+        action = data.get("type", "CHAT")
+
+        if action == "GET_EXPENSES":
+            return {"transcript": transcript, "action": "GET_EXPENSES"}
+
+        if action == "ADD_EXPENSE":
+
+            categories = get_categories(token) or []
+
+            amount = data.get("data", {}).get("amount")
+            note = data.get("data", {}).get("note", "")
+            ai_category = (data.get("data", {}).get("category", "")).lower()
+
+            category_id = None
+
+            for c in categories:
+                db_cat = c["category"].lower()
+                if ai_category in db_cat or db_cat in ai_category:
+                    category_id = c["categoryID"]
+                    ai_category = c["category"]
+                    break
+
+            if not category_id:
+                category_id = categories[0]["categoryID"] if categories else None
+                ai_category = categories[0]["category"] if categories else "general"
+
+            expense = {
+                "categoryID": category_id,
+                "category": ai_category,
+                "note": note,
+                "expenseAmount": amount,
+                "expenseDate": datetime.datetime.now().strftime("%Y-%m-%d")
             }
 
-        intent = detect_intent(text)
+            r = requests.post(
+                f"{NODE_API}/voiceDrafts/add",
+                json=expense,
+                headers={"Authorization": f"Bearer {token}"}
+            )
 
-        token = None
+            saved = r.json() if r.headers.get("content-type","").startswith("application/json") else expense
 
-        if authorization and " " in authorization:
-            token = authorization.split(" ")[1]
+            return {
+                "transcript": transcript,
+                "action": "ADD_EXPENSE",
+                "data": [saved]
+            }
 
-        data = None
+        if action == "ADD_MULTIPLE":
 
-        if token:
-            try:
-                data = execute_intent(intent, text, token)
-            except Exception as e:
-                data = {"error": str(e)}
+            categories = get_categories(token) or []
+            items = data.get("data", [])
 
-        if data and "error" in data:
-            intent = "ERROR"
+            if not isinstance(items, list):
+                items = []
+
+            saved_expenses = []
+
+            for item in items:
+
+                raw_cat = (item.get("category", "")).lower()
+
+                category_id = None
+                final_category = raw_cat
+
+                for c in categories:
+                    db_cat = c["category"].lower()
+                    if raw_cat in db_cat or db_cat in raw_cat:
+                        category_id = c["categoryID"]
+                        final_category = c["category"]
+                        break
+
+                if not category_id and categories:
+                    category_id = categories[0]["categoryID"]
+                    final_category = categories[0]["category"]
+
+                payload = {
+                    "categoryID": category_id,
+                    "category": final_category,
+                    "note": item.get("note", ""),
+                    "expenseAmount": item.get("amount"),
+                    "expenseDate": datetime.datetime.now().strftime("%Y-%m-%d")
+                }
+
+                r = requests.post(
+                    f"{NODE_API}/voiceDrafts/add",
+                    json=payload,
+                    headers={"Authorization": f"Bearer {token}"}
+                )
+
+                try:
+                    saved_expenses.append(r.json())
+                except:
+                    saved_expenses.append(payload)
+
+            return {
+                "transcript": transcript,
+                "action": "ADD_MULTIPLE",
+                "data": saved_expenses
+            }
 
         return {
-            "transcript": text,
-            "intent": intent,
-            "data": data
+            "transcript": transcript,
+            "action": action,
+            "reply": data.get("reply")
         }
 
     except Exception as e:
-        return {
-            "transcript": "",
-            "intent": "ERROR",
-            "data": {"error": str(e)}
-        }
+        return {"action": "ERROR", "error": str(e)}
 
     finally:
         try:
@@ -295,3 +561,128 @@ async def voice_input(file: UploadFile = File(...), authorization: str = Header(
                 os.remove(wav_path)
         except:
             pass
+
+
+
+
+@app.post("/scan-receipt")
+@app.post("/scan-receipt")
+async def scan_receipt(
+    receipt: UploadFile = File(...),
+    authorization: str = Header(None)
+):
+
+    image_path = None
+
+    try:
+
+        token = authorization.split(" ")[1]
+
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=".jpg"
+        ) as tmp:
+
+            contents = await receipt.read()
+            tmp.write(contents)
+            image_path = tmp.name
+
+        
+        text = extract_text_from_image(image_path)
+
+        
+
+        if not text.strip():
+            return {
+                "success": False,
+                "message": "No text found in receipt"
+            }
+
+        
+        response = ask_receipt_agent(text)
+
+        
+
+        data = safe_json_loads(response)
+
+        if not data:
+            return {
+                "success": False,
+                "message": "AI extraction failed"
+            }
+
+        items = data.get("items", [])
+        date = data.get(
+            "date",
+            datetime.datetime.now().strftime("%Y-%m-%d")
+        )
+
+        categories = get_categories(token) or []
+
+        saved_expenses = []
+
+        for item in items:
+
+            ai_category = item.get(
+                "category",
+                "Other"
+            ).lower()
+
+            category_id = None
+
+            for c in categories:
+
+                db_cat = c["category"].lower()
+
+                if (
+                    ai_category in db_cat
+                    or db_cat in ai_category
+                ):
+                    category_id = c["categoryID"]
+                    break
+
+            if not category_id and categories:
+                category_id = categories[0]["categoryID"]
+
+            payload = {
+                "expenseAmount": item["amount"],
+                "categoryID": category_id,
+                "note": item["name"],
+                "expenseDate": date
+            }
+
+            r = requests.post(
+                f"{NODE_API}/voiceDrafts/add",
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {token}"
+                }
+            )
+
+            try:
+                saved_expenses.append(r.json())
+            except:
+                saved_expenses.append(payload)
+
+        return {
+            "success": True,
+            "ocrText": text,
+            "count": len(saved_expenses),
+            "data": saved_expenses
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+    finally:
+
+        if (
+            image_path
+            and os.path.exists(image_path)
+        ):
+            os.remove(image_path)
+

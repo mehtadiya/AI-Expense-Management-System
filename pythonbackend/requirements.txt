@@ -7,3 +7,9 @@ scikit-learn
 python-dotenv
 torch --index-url https://download.pytorch.org/whl/cpu
 faster-whisper
+easyocr
+opencv-python-headless
+numpy
+Pillow
+groq
+google-genai
