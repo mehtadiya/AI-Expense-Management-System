@@ -88,7 +88,11 @@ function VoiceDrafts() {
             )}
             
            
-            <button className="btn btn-success" onClick={handleAddAll}>
+            <button className="btn btn-success me-2" onClick={()=>{navigate(-1)}}>
+                Back
+            </button>
+
+            <button className="btn btn-success me-2" onClick={handleAddAll}>
                 Review & Add Expenses
             </button>
         </div>

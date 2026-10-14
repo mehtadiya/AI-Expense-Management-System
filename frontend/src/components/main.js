@@ -43,7 +43,7 @@ function Main() {
           <div className="col-3 col-md-2 d-flex justify-content-end align-items-center gap-2">
 
             <Link
-              to={`/main/about`}
+              to={`/main/alerts`}
               className="d-flex justify-content-center align-items-center icon-box"
             >
               <i className="bi bi-bell-fill fs-5"></i>

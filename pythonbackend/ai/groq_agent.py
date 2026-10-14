@@ -101,20 +101,60 @@ IMPORTANT:
 """
 
 
-def ask_agent(message, memory):
+def ask_agent(message, memory, categories=None):
 
-    history = "\n".join([f"{m['role']}: {m['text']}" for m in memory])
+    history = "\n".join(
+        [f"{m['role']}: {m['text']}" for m in memory]
+    )
+
+    # Convert database categories into simple names
+    category_names = [
+        c["category"] for c in (categories or [])
+    ]
+
+    available_categories = ", ".join(category_names)
 
     prompt = f"""
 Conversation:
 {history}
+
+Available expense categories:
+{available_categories}
+
+IMPORTANT CATEGORY RULE:
+When adding an expense, you MUST choose the category from the
+Available expense categories above.
+
+Use semantic understanding, NOT exact keyword matching.
+
+Examples:
+- burger → Food
+- pizza → Food
+- chocolate → Food
+- ice cream → Food
+- coffee → Food
+- tea → Food
+- restaurant → Food
+- groceries → Food
+- petrol → Transport
+- bus → Transport
+- train → Transport
+- flight → Travel
+- movie → Entertainment
+- clothes → Shopping
+
+If the item clearly belongs to an existing category, use that
+existing category.
+
+DO NOT create a new category just because the item name itself
+does not match the category name.
 
 User:
 {message}
 """
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt}
@@ -123,6 +163,7 @@ User:
     )
 
     return response.choices[0].message.content.strip()
+
 
 def ask_receipt_agent(receipt_text):
 
@@ -173,7 +214,7 @@ Rules:
 """
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         messages=[
             {
                 "role": "system",

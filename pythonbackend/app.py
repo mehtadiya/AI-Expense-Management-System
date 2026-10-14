@@ -103,7 +103,14 @@ async def chat_v2(req: ChatRequest, authorization: str = Header(None)):
         user_id = token
 
         memory = get_memory(user_id)
-        response = ask_agent(req.message, memory)
+
+        categories = get_categories(token) or []
+
+        response = ask_agent(
+            req.message,
+            memory,
+            categories
+        )       
 
         data = safe_json_loads(response)
 
@@ -565,7 +572,6 @@ async def voice_v2(
 
 
 
-@app.post("/scan-receipt")
 @app.post("/scan-receipt")
 async def scan_receipt(
     receipt: UploadFile = File(...),
